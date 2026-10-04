@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hero Test | Uday Singh</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="styles/knowura.css">
+  <link rel="stylesheet" href="styles/site.css">
+</head>
+<body>
+  <!-- fixed 3D stage sits behind all content -->
+  <div class="laptop-stage" id="stage" aria-hidden="true">
+    <canvas id="laptop-canvas"></canvas>
+    <svg class="laptop-fallback" viewBox="0 0 240 160" fill="none" stroke="#22e5ff" stroke-width="3">
+      <rect x="40" y="12" width="160" height="104" rx="8" fill="#050a1a"/>
+      <path d="M16 124h208l-14 20H30z" fill="#0f2a80"/>
+      <path d="M60 40l14 12-14 12M84 64h30" stroke-linecap="square"/>
+    </svg>
+  </div>
+
+  <main>
+    <section class="hero" id="hero">
+      <div class="hero-copy">
+        <p class="eyebrow glass-light">Vadodara, India</p>
+        <h1>Uday Singh</h1>
+        <p class="tagline">I build hardware that talks to software</p>
+        <div class="actions">
+          <a class="btn" href="https://github.com/udaydotoffical-svg" target="_blank" rel="noopener">GitHub</a>
+          <a class="btn" href="mailto:uday.dot.offical@gmail.com">Email</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- stand-in for About, to show the shrink-and-drift on scroll -->
+    <section class="hero" id="about" style="min-height:90vh;align-items:center">
+      <div class="glass" style="padding:32px;max-width:560px">
+        <h2 style="margin-top:0;font-weight:400">About (placeholder)</h2>
+        <p>Scroll check: the laptop should shrink and drift to the side while this panel scrolls in.</p>
+      </div>
+    </section>
+    <div style="height:60vh"></div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+  <script src="js/laptop.js"></script>
+  <script>
+    LaptopHero.init({
+      canvas: document.getElementById('laptop-canvas'),
+      stage: document.getElementById('stage'),
+      track: document.getElementById('hero'),
+      zone: [document.getElementById('hero'), document.getElementById('about')],
+      // glbUrl: 'models/laptop.glb',
+    });
+  </script>
+</body>
+</html>

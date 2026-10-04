@@ -1,0 +1,187 @@
+/* Site styles. Loaded AFTER knowura.css, which is never edited.
+   Clean class names below carry the exact declarations of the *-reference patterns. */
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.65;
+  background:
+    radial-gradient(60% 50% at 82% 8%, color-mix(in srgb, var(--blue-deep) 70%, transparent), transparent 70%),
+    radial-gradient(50% 45% at 8% 92%, color-mix(in srgb, var(--blue) 24%, transparent), transparent 70%),
+    radial-gradient(40% 35% at 50% 50%, color-mix(in srgb, var(--blue-deep) 28%, transparent), transparent 75%),
+    linear-gradient(180deg, color-mix(in srgb, var(--blue-deep) 16%, var(--dark)), var(--dark) 55%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+/* faint cyan pixel particles (CSS layer, the WebGL layer adds more near the laptop) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  --p: color-mix(in srgb, var(--cyan) 50%, transparent);
+  --p2: color-mix(in srgb, var(--cyan) 28%, transparent);
+  background-image:
+    radial-gradient(2px 2px at 8% 18%, var(--p), transparent),
+    radial-gradient(2px 2px at 23% 72%, var(--p2), transparent),
+    radial-gradient(3px 3px at 37% 34%, var(--p2), transparent),
+    radial-gradient(2px 2px at 52% 88%, var(--p), transparent),
+    radial-gradient(2px 2px at 64% 12%, var(--p2), transparent),
+    radial-gradient(3px 3px at 77% 58%, var(--p), transparent),
+    radial-gradient(2px 2px at 91% 80%, var(--p2), transparent),
+    radial-gradient(2px 2px at 95% 28%, var(--p), transparent),
+    radial-gradient(2px 2px at 15% 46%, var(--p2), transparent),
+    radial-gradient(2px 2px at 44% 56%, var(--p2), transparent);
+}
+
+a { color: var(--cyan); }
+
+/* ---------- components ---------- */
+
+.glass {
+  background: var(--panel-strong);
+  backdrop-filter: blur(24px) saturate(150%);
+  border: 3px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  color: var(--text);
+}
+
+.glass-light {
+  background: var(--panel);
+  backdrop-filter: blur(20px) saturate(140%);
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  color: var(--text-dim);
+}
+
+.btn {
+  color: var(--cyan) !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.03);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  /* layout extras (not part of the reference look) */
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--ink);
+  background: rgba(47,107,255,0.2);
+}
+
+.btn:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+
+.input {
+  background: var(--panel-strong) !important;
+  backdrop-filter: blur(24px) saturate(150%);
+  border: 2.5px solid var(--ink) !important;
+  border-radius: 12px !important;
+  color: var(--text) !important;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.4);
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 17px;
+}
+
+.input:focus {
+  border-color: var(--cyan) !important;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.4), 0 0 0 3px rgba(34,229,255,0.2) !important;
+  outline: none;
+}
+
+/* ---------- 3D laptop stage ---------- */
+
+.laptop-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.laptop-stage.is-hidden { opacity: 0; }
+.laptop-stage canvas { display: block; width: 100%; height: 100%; }
+
+/* reduced motion: the laptop is a still image living inside the hero, no scroll drift */
+.reduced-motion .laptop-stage { position: absolute; top: 0; height: 100vh; height: 100svh; }
+
+.laptop-fallback { display: none; }
+.no-webgl .laptop-fallback {
+  display: block;
+  position: absolute;
+  top: 50%; left: 70%;
+  width: min(420px, 80vw);
+  transform: translate(-50%, -50%);
+}
+@media (max-width: 860px) { .no-webgl .laptop-fallback { left: 50%; top: 28%; } }
+
+/* ---------- hero ---------- */
+
+main { position: relative; z-index: 1; }
+
+.hero {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 24px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 96px 24px 64px;
+}
+.hero-copy { max-width: 620px; }
+.eyebrow {
+  display: inline-block;
+  padding: 6px 12px;
+  margin: 0 0 20px;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.hero h1 {
+  margin: 0 0 16px;
+  font-size: clamp(44px, 7vw, 84px);
+  line-height: 1.02;
+  font-weight: 400;
+  text-shadow: 4px 4px 0 var(--ink);
+}
+.hero .tagline {
+  margin: 0 0 32px;
+  font-size: clamp(20px, 2.4vw, 26px);
+  color: var(--text-dim);
+}
+.actions { display: flex; flex-wrap: wrap; gap: 16px; }
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+    align-items: end;
+    padding-top: 40vh;
+    padding-bottom: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .btn, .laptop-stage { transition: none; }
+}

@@ -1,0 +1,79 @@
+@font-face {
+  font-family: 'Geist Pixel';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/geist-pixel@5.3.0/latin-400-normal.woff2) format('woff2'),
+       url(https://cdn.jsdelivr.net/fontsource/fonts/geist-pixel@5.3.0/latin-400-normal.woff) format('woff');
+}
+
+:root {
+  --dark: #05070f;
+  --blue: #2f6bff;
+  --blue-deep: #0f2a80;
+  --cyan: #22e5ff;
+  --ink: #000000;
+  --panel: rgba(18, 34, 68, 0.26);
+  --panel-strong: rgba(9, 18, 40, 0.4);
+  --text: #eaf6ff;
+  --text-dim: #8fa6cc;
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --shadow-md: 5px 5px 0 var(--ink);
+  --shadow-lg: 8px 8px 0 var(--ink);
+}
+
+* {
+  font-family: 'Geist Pixel', sans-serif !important;
+  box-sizing: border-box;
+}
+
+/* Reference component patterns — reusable across any site: */
+
+.glass-panel-reference {
+  background: var(--panel-strong);
+  backdrop-filter: blur(24px) saturate(150%);
+  border: 3px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  color: var(--text);
+}
+
+.glass-panel-lighter-reference {
+  background: var(--panel);
+  backdrop-filter: blur(20px) saturate(140%);
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  color: var(--text-dim);
+}
+
+.accent-link-reference {
+  color: var(--cyan) !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.03);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.accent-link-reference:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--ink);
+  background: rgba(47,107,255,0.2);
+}
+
+.input-field-reference {
+  background: var(--panel-strong) !important;
+  backdrop-filter: blur(24px) saturate(150%);
+  border: 2.5px solid var(--ink) !important;
+  border-radius: 12px !important;
+  color: var(--text) !important;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.4);
+}
+
+.input-field-reference:focus {
+  border-color: var(--cyan) !important;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.4), 0 0 0 3px rgba(34,229,255,0.2) !important;
+}
