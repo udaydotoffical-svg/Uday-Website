@@ -10,6 +10,8 @@ styles/site.css       site styles (.glass .glass-light .btn .input copy the refe
 js/content.js         ALL text, links and projects live here
 js/main.js            renders sections, Knowura frame, form, "/" command palette
 js/laptop.js          3D laptop (Three.js)
+js/fx.js              motion layer: boot loader, cursor, scramble text, marquees, tilt, scroll effects
+styles/fx.css         styles for the motion layer
 api/embed-check.js    Vercel function: checks if a site allows iframes
 assets/               logo, favicon, OG image, placeholders
 vercel.json           headers + cache
@@ -30,7 +32,7 @@ Open the printed URL. (`/api/embed-check` only exists on Vercel; locally the Kno
 3. Framework preset: **Other**. Leave build command and output directory empty. Deploy.
 4. Open your new URL, then set it in two places so link previews work:
    - `siteUrl` in `js/content.js`
-   - the three `https://uday-singh.vercel.app/...` lines (`og:url`, `og:image`) in `index.html`
+   - the three `https://uday3ebsite.vercel.app/...` lines (`og:url`, `og:image`) in `index.html`
 
 Optional: add a custom domain under Project, Settings, Domains.
 
@@ -59,7 +61,7 @@ Everything is in `js/content.js`. To **add a project**, copy one object inside `
 | Knowura screenshot | `assets/knowura-fallback.svg` → `projects.items[0].visual.fallback` | Shown while loading and if the live frame is blocked. Use a 16:10 png/webp. |
 | Samata photo or video (optional) | `projects.items[1].visual` in `js/content.js` | The panel is an animated demo signal monitor, no assets needed. For a real photo or video, change it to `type: 'media'` with `image` (and optional `video`). |
 | Samata link (optional) | `projects.items[1].link` | Left out on purpose (the repo is private); a badge line shows instead. Add `link: { label, href }` to get a button. |
-| Site URL | `siteUrl` in `js/content.js`, plus the OG tags in `index.html` | `https://uday-singh.vercel.app` is a guess. |
+| Site URL | `siteUrl` in `js/content.js`, plus the OG tags in `index.html` | Set to `https://uday3ebsite.vercel.app`. |
 | OG image | `assets/og.png` | 1200x630, regenerate if you change your name block. |
 | Timeline | `timeline.items` in `js/content.js` | Wording is a draft built from what you told me; edit freely. |
 | 3D laptop model | `glbUrl` line in `js/main.js` (commented) | See below. |
@@ -95,7 +97,7 @@ If you see `X-Frame-Options: DENY` (or `SAMEORIGIN`), or a `frame-ancestors` tha
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' https://uday-singh.vercel.app" }
+        { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' https://uday3ebsite.vercel.app" }
       ]
     }
   ]
@@ -106,6 +108,17 @@ and remove any `X-Frame-Options` header from that file, from `next.config.js` `h
 
 `/api/embed-check` only checks `*.vercel.app` hosts. For other domains, set the env var `EMBED_ALLOW=example.com,other.com` in Vercel.
 
+## Motion layer (js/fx.js + styles/fx.css)
+
+- **Boot loader**: terminal log + giant pixel counter, once per browser session (skipped for reduced motion).
+- **Hero intro**: name tags drop in with a spring and decode from scrambled glyphs, stars spin in, copy rises.
+- **Custom cursor** (mouse only): pixel dot + trailing ring that grows on links and shows labels (LIVE, DEMO, OPEN, SAY HI).
+- **Magnetic buttons**, **3D tilt + glare** on project panels, title colour sweep on hover.
+- **Kinetic marquees**: words come from `marquee` in `js/content.js`; scrolling speeds them up and flips direction.
+- **Scroll**: progress bar, nav hides on scroll down, name tags drift apart, section titles decode, timeline line draws itself, quotes light up word by word.
+- **Mega footer**: giant "LET'S BUILD" email link with a hover wave.
+- Film grain overlay. Everything heavy switches off under `prefers-reduced-motion`.
+
 ## Command palette
 
 Press `/` anywhere (or tap the `/` button in the nav). Type to filter, arrows to move, Enter to run, Esc to close. Commands are generated from `js/content.js`, so new projects get an `open <id>` command automatically.
@@ -115,4 +128,4 @@ Press `/` anywhere (or tap the `/` button in the nav). Type to filter, arrows to
 - Three.js and the laptop code are not loaded until the first interaction (mouse move, touch, scroll, key) or 6 s after page load (`LAPTOP_BOOT_MS` in `js/main.js`), then the laptop fades in. This keeps the page fast. Pixel ratio is capped at 2, rendering pauses off-screen and in hidden tabs.
 - `prefers-reduced-motion`: the laptop renders a single still frame, particles and stars stop, no scroll animations.
 - No WebGL: a flat SVG laptop is shown instead.
-- Lighthouse (local run, software rendering, simulated mobile): performance 97 mobile / 99 desktop, accessibility 100, best practices 96, SEO 100. Re-run on your deployed URL (Chrome DevTools, Lighthouse tab).
+- Lighthouse (local run, software rendering, simulated mobile): performance 92-95 mobile / 100 desktop, accessibility 100, best practices 96, SEO 100. Re-run on your deployed URL (Chrome DevTools, Lighthouse tab).

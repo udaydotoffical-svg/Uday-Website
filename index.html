@@ -7,12 +7,12 @@
   <meta name="description" content="Uday Singh is a student developer and hardware builder from Vadodara, India, focused on firmware and hardware. WRO 2026 Future Innovators, team CultureWear.">
   <meta name="theme-color" content="#05070f">
 
-  <!-- Open Graph / Twitter. PLACEHOLDER: replace the domain with your real one -->
+  <!-- Open Graph / Twitter -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Uday Singh | I build hardware that talks to software">
   <meta property="og:description" content="Student developer and hardware builder from Vadodara, India. Firmware, hardware, Knowura and Samata.">
-  <meta property="og:url" content="https://uday-singh.vercel.app/">
-  <meta property="og:image" content="https://uday-singh.vercel.app/assets/og.png">
+  <meta property="og:url" content="https://uday3ebsite.vercel.app/">
+  <meta property="og:image" content="https://uday3ebsite.vercel.app/assets/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
@@ -24,8 +24,32 @@
   <!-- design system first, then site styles -->
   <link rel="stylesheet" href="styles/knowura.css">
   <link rel="stylesheet" href="styles/site.css">
+  <link rel="stylesheet" href="styles/fx.css">
+  <script>
+    // boot loader once per session (skipped for reduced motion); failsafes if JS below never runs
+    (function (d) {
+      d.classList.add('js');
+      try {
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !sessionStorage.getItem('uday-booted')) d.classList.add('is-loading');
+      } catch (e) {}
+      setTimeout(function () { d.classList.remove('is-loading'); d.classList.add('is-intro'); }, 5000);
+    })(document.documentElement);
+  </script>
 </head>
 <body>
+  <div class="loader" id="loader" aria-hidden="true">
+    <ul class="loader-log">
+      <li>booting uday.os</li>
+      <li>flashing firmware</li>
+      <li>waking sensors</li>
+      <li>linking hardware to software</li>
+    </ul>
+    <div>
+      <div class="loader-num">000</div>
+      <div class="loader-bar"><i></i></div>
+    </div>
+  </div>
+
   <a class="skip" href="#about">Skip to content</a>
 
   <!-- icon sprite -->
@@ -105,5 +129,6 @@
   <!-- Three.js (r128) and js/laptop.js are loaded by main.js on first interaction or after load + 6s -->
   <script defer src="js/content.js"></script>
   <script defer src="js/main.js"></script>
+  <script defer src="js/fx.js"></script>
 </body>
 </html>

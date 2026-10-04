@@ -16,7 +16,7 @@ window.SITE = {
   eyebrow: 'Student dev · Vadodara, India',
   description:
     'Uday Singh is a student developer and hardware builder from Vadodara, India, focused on firmware and hardware. WRO 2026 Future Innovators, team CultureWear.',
-  siteUrl: 'https://uday-singh.vercel.app', // PLACEHOLDER: set to your real domain (used for Open Graph)
+  siteUrl: 'https://uday3ebsite.vercel.app', // used for Open Graph
 
   links: {
     github: 'https://github.com/udaydotoffical-svg',
@@ -114,6 +114,9 @@ window.SITE = {
     formspreeId: '', // optional: paste a Formspree form id (e.g. 'xyzabcde'). Empty = the form opens your email app instead.
     subject: 'Hello from your portfolio',
   },
+
+  // words in the scrolling marquee bands
+  marquee: ['Firmware', 'Hardware', 'WRO 2026', 'Knowura', 'Sensors', 'Vadodara'],
 
   footer: 'Built by Uday Singh · Vadodara, India',
 };
