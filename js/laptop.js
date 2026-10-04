@@ -169,13 +169,13 @@
     return { texture, draw };
   }
 
-  function glowTexture() {
+  function glowTexture(inner, mid) {
     const c = document.createElement('canvas');
     c.width = c.height = 256;
     const g = c.getContext('2d');
     const grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
-    grad.addColorStop(0, 'rgba(34,229,255,0.85)');
-    grad.addColorStop(0.35, 'rgba(47,107,255,0.4)');
+    grad.addColorStop(0, inner || 'rgba(34,229,255,0.85)');
+    grad.addColorStop(0.35, mid || 'rgba(47,107,255,0.4)');
     grad.addColorStop(1, 'rgba(15,42,128,0)');
     g.fillStyle = grad;
     g.fillRect(0, 0, 256, 256);
@@ -295,6 +295,8 @@
   // ~1.8:1 like a real ESP32-DevKitC (51 x 28 mm). 1 unit = ~2 cm.
   function buildESP32() {
     const g = new THREE.Group();
+    const body = new THREE.Group(); // procedural board (fallback); hidden once the real model loads
+    g.add(body);
     const BW = 2.5;
     const BD = 1.4;
     const BT = 0.07;
@@ -306,7 +308,7 @@
 
     const board = new THREE.Mesh(slab(BW, BD, BT, 0.06, 0.012), pcb);
     board.position.y = BT / 2;
-    g.add(board);
+    body.add(board);
 
     // glowing traces on the board (flat strips)
     const traceMat = new THREE.MeshBasicMaterial({ color: 0x22e5ff, transparent: true, opacity: 0.6, toneMapped: false });
@@ -314,17 +316,17 @@
       const t = new THREE.Mesh(new THREE.PlaneGeometry(len, 0.012), traceMat);
       t.rotation.x = -Math.PI / 2;
       t.position.set(x, BT + 0.002, z);
-      g.add(t);
+      body.add(t);
       const t2 = new THREE.Mesh(new THREE.PlaneGeometry(0.012, 0.25 + i * 0.1), traceMat);
       t2.rotation.x = -Math.PI / 2;
       t2.position.set(x + len / 2, BT + 0.002, z + 0.12);
-      g.add(t2);
+      body.add(t2);
     });
 
     // WROOM module: silver shield + PCB antenna keep-out
     const shield = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.09, 0.9), metal);
     shield.position.set(-BW / 2 + 0.62, BT + 0.045, 0);
-    g.add(shield);
+    body.add(shield);
     const label = new THREE.Mesh(
       new THREE.PlaneGeometry(0.85, 0.5),
       new THREE.MeshBasicMaterial({
@@ -343,18 +345,18 @@
     );
     label.rotation.x = -Math.PI / 2;
     label.position.set(shield.position.x, BT + 0.092, 0.02);
-    g.add(label);
+    body.add(label);
     // meander antenna
     const ant = new THREE.MeshBasicMaterial({ color: 0xe5c35a, toneMapped: false });
     const ax = -BW / 2 + 0.1;
     for (let i = 0; i < 5; i++) {
       const bar = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.012, 0.3), ant);
       bar.position.set(ax + i * 0.045 - 0.0, BT + 0.007, i % 2 ? -0.12 : 0.12);
-      g.add(bar);
+      body.add(bar);
     }
     const antBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.012, 0.02), ant);
     antBase.position.set(ax + 0.09, BT + 0.007, 0.27);
-    g.add(antBase);
+    body.add(antBase);
 
     // pin headers: 19 per side
     const pinGeo = new THREE.BoxGeometry(0.05, 0.16, 0.05);
@@ -365,32 +367,32 @@
     [-1, 1].forEach((side) => {
       const strip = new THREE.Mesh(base, black);
       strip.position.set(0.1, BT + 0.045, side * (BD / 2 - 0.1));
-      g.add(strip);
+      body.add(strip);
       for (let i = 0; i < 19; i++) {
         m.setPosition(0.1 + (i - 9) * 0.105, BT + 0.1, side * (BD / 2 - 0.1));
         pins.setMatrixAt(n++, m);
       }
     });
-    g.add(pins);
+    body.add(pins);
 
     // micro-USB at the far end + USB-UART chip + 2 tact buttons
     const usb = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.14, 0.28), metal);
     usb.position.set(BW / 2 - 0.12, BT + 0.07, 0);
-    g.add(usb);
+    body.add(usb);
     const usbHole = new THREE.Mesh(new THREE.PlaneGeometry(0.02, 0.2), new THREE.MeshBasicMaterial({ color: 0x000000 }));
     usbHole.rotation.y = Math.PI / 2;
     usbHole.position.set(BW / 2 + 0.051, BT + 0.07, 0);
-    g.add(usbHole);
+    body.add(usbHole);
     const chip = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.04, 0.2), black);
     chip.position.set(BW / 2 - 0.55, BT + 0.02, 0.0);
-    g.add(chip);
+    body.add(chip);
     [-0.32, 0.32].forEach((z, i) => {
       const btn = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.07, 0.2), metal);
       btn.position.set(BW / 2 - 0.4, BT + 0.035, z);
-      g.add(btn);
+      body.add(btn);
       const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.05, 12), new THREE.MeshStandardMaterial({ color: i ? 0x2f6bff : 0xeaf6ff, roughness: 0.5 }));
       cap.position.set(btn.position.x, BT + 0.09, z);
-      g.add(cap);
+      body.add(cap);
     });
 
     // LEDs: steady power LED + blinking status LED (GPIO2 style)
@@ -439,7 +441,7 @@
       rings.push(r);
     }
 
-    return { group: g, ledMat, led, halo, ledLight, powerMat, pulses, rings, dims: { BW, BD, BT } };
+    return { group: g, body, ledMat, led, power, halo, ledLight, powerMat, pulses, rings, ledRGB: [0.13, 0.9, 1], ant: { x: -BW / 2 - 0.05, y: 0.25, z: 0 }, dims: { BW, BD, BT } };
   }
 
   /* ---------- scene ---------- */
@@ -508,6 +510,111 @@
     esp.group.scale.setScalar(0.85);
     espWrap.rotation.set(0.28, 0.55, -0.12);
     floatGroup.add(espWrap);
+
+    // ---- real Seeed XIAO ESP32-S3 (converted from the supplied STEP file) ----
+    // meta values come from the conversion: units are scene units, long axis = x, USB-C at +x, antenna connector at -x
+    const XIAO = {
+      url: 'assets/xiao-esp32s3.glb',
+      label: 'assets/xiao-label.jpg',
+      shield: { x: [-0.842, 0.334], z: [-0.7, 0.701], top: 0.3614 },
+      pcbTop: 0.139,
+      ledUser: [0.6708, 0.6351], // blinks (amber)
+      ledCharge: [0.6708, -0.6659], // steady (red)
+      ant: { x: -1.06, y: 0.36, z: -0.53 },
+    };
+
+    function loadScript(src) {
+      return new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = res;
+        s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+
+    function makeEnv() {
+      // tiny studio-ish sky so the metal parts (USB-C shell, gold pads) have something to reflect
+      const cv = document.createElement('canvas');
+      cv.width = 256;
+      cv.height = 128;
+      const g = cv.getContext('2d');
+      const grad = g.createLinearGradient(0, 0, 0, 128);
+      grad.addColorStop(0, '#5b7bb8');
+      grad.addColorStop(0.45, '#17306e');
+      grad.addColorStop(0.55, '#0a1634');
+      grad.addColorStop(1, '#02030a');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 256, 128);
+      g.fillStyle = '#ffffff';
+      g.fillRect(40, 30, 60, 14); // soft box
+      g.fillStyle = '#22e5ff';
+      g.fillRect(170, 40, 50, 10); // cyan strip
+      const tex = new THREE.CanvasTexture(cv);
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      const pm = new THREE.PMREMGenerator(renderer);
+      const env = pm.fromEquirectangular(tex).texture;
+      pm.dispose();
+      tex.dispose();
+      return env;
+    }
+
+    function loadXiao() {
+      const ready = THREE.GLTFLoader ? Promise.resolve() : loadScript('js/vendor/GLTFLoader.js');
+      ready
+        .then(
+          () =>
+            new Promise((res, rej) => {
+              new THREE.GLTFLoader().load(XIAO.url, res, undefined, rej);
+            })
+        )
+        .then((gltf) => {
+          const env = makeEnv();
+          gltf.scene.traverse((o) => {
+            if (!o.isMesh) return;
+            o.material.envMap = env;
+            o.material.envMapIntensity = 0.7;
+            o.material.needsUpdate = true;
+          });
+          esp.body.visible = false;
+          esp.group.add(gltf.scene);
+
+          // the printed module label from the supplied top-view photo
+          const tex = new THREE.TextureLoader().load(XIAO.label, () => reduced && renderStill());
+          if ('encoding' in tex) tex.encoding = THREE.sRGBEncoding;
+          tex.anisotropy = 4;
+          const sx = XIAO.shield.x[1] - XIAO.shield.x[0];
+          const sz = XIAO.shield.z[1] - XIAO.shield.z[0];
+          const label = new THREE.Mesh(
+            new THREE.PlaneGeometry(sz, sx),
+            new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55, metalness: 0.05, envMap: env, envMapIntensity: 0.25 })
+          );
+          label.rotation.set(-Math.PI / 2, 0, -Math.PI / 2); // image right -> +z, image up -> +x
+          label.position.set((XIAO.shield.x[0] + XIAO.shield.x[1]) / 2, XIAO.shield.top + 0.003, (XIAO.shield.z[0] + XIAO.shield.z[1]) / 2);
+          esp.group.add(label);
+
+          // LEDs: amber user LED blinks, red charge LED stays on
+          const y = XIAO.pcbTop + 0.012;
+          esp.led.position.set(XIAO.ledUser[0], y, XIAO.ledUser[1]);
+          esp.led.scale.set(1.1, 1, 1.1);
+          esp.power.position.set(XIAO.ledCharge[0], y, XIAO.ledCharge[1]);
+          esp.halo.position.set(XIAO.ledUser[0], y + 0.06, XIAO.ledUser[1]);
+          esp.halo.scale.setScalar(0.8);
+          esp.halo.material.map = glowTexture('rgba(255,176,48,0.9)', 'rgba(255,110,20,0.38)');
+          esp.halo.material.needsUpdate = true;
+          esp.ledLight.color.setHex(0xffb030);
+          esp.ledLight.position.set(XIAO.ledUser[0], 0.4, XIAO.ledUser[1]);
+          esp.ledRGB = [1, 0.69, 0.19];
+          esp.ledMat.color.setRGB(1, 0.69, 0.19);
+
+          // wifi arcs + data packets start at the antenna connector
+          esp.ant = XIAO.ant;
+          esp.rings.forEach((r) => r.position.set(XIAO.ant.x - 0.08, XIAO.ant.y, XIAO.ant.z));
+          if (reduced) renderStill();
+        })
+        .catch((e) => console.warn('XIAO model failed, keeping the procedural board', e));
+    }
+
     let espBase = { x: -2.7, y: -0.55, z: 1.5 };
     // wide screens: beside the laptop. Portrait screens: in front of it, so nothing is clipped.
     function placeEsp() {
@@ -516,6 +623,7 @@
       esp.group.scale.setScalar(portrait ? 0.55 : 0.85);
       espWrap.position.set(espBase.x, espBase.y, espBase.z);
     }
+    loadXiao();
 
     // glow pool under the laptop
     const glow = new THREE.Mesh(
@@ -669,7 +777,7 @@
       espWrap.position.y = espBase.y + (reduced ? 0 : Math.sin(t * 1.3 + 1.2) * 0.09);
       const on = reduced ? true : Math.floor(t * 2) % 2 === 0; // 1 Hz blink
       const k2 = on ? 1 : 0.08;
-      esp.ledMat.color.setRGB(0.13 * k2 + 0.02, 0.9 * k2 + 0.05, 1 * k2 + 0.05);
+      esp.ledMat.color.setRGB(esp.ledRGB[0] * k2 + 0.02, esp.ledRGB[1] * k2 + 0.02, esp.ledRGB[2] * k2 + 0.02);
       esp.halo.material.opacity = on ? 0.95 : 0.0;
       esp.halo.visible = on;
       esp.ledLight.intensity = on ? 1.4 : 0;
@@ -679,7 +787,7 @@
         esp.pulses.forEach((p, i) => {
           const u = (((t * 0.45 + i / esp.pulses.length) % 1) + 1) % 1;
           // bezier: start at antenna (-1.25,0.2,0), control up high, end near laptop left edge
-          const sx = -1.25, sy = 0.25, sz = 0;
+          const sx = esp.ant.x, sy = esp.ant.y, sz = esp.ant.z;
           const ex = 6.0, ey = 1.2, ez = -3.0;
           const cx = 1.0, cy = 3.2, cz = -1.0;
           const a = (1 - u) * (1 - u), b = 2 * (1 - u) * u, d = u * u;
@@ -790,7 +898,7 @@
       };
       if (THREE.GLTFLoader) return go();
       const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+      s.src = 'js/vendor/GLTFLoader.js';
       s.onload = go;
       document.head.appendChild(s);
     }

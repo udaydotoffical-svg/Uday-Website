@@ -67,9 +67,17 @@ Everything is in `js/content.js`. To **add a project**, copy one object inside `
 | 3D laptop model | `glbUrl` line in `js/main.js` (commented) | See below. |
 | Formspree (optional) | `contact.formspreeId` in `js/content.js` | Empty = the form opens the visitor's email app (mailto). |
 
-## The ESP32 next to the laptop
+## The ESP32 next to the laptop (real Seeed XIAO ESP32-S3)
 
-`buildESP32()` in `js/laptop.js` is a procedural dev board (shield with "ESP32 WROOM-32" label, antenna, 2x19 gold pins, micro-USB, EN/BOOT buttons, USB-UART chip). The cyan status LED blinks at 1 Hz and lights the board, a red power LED stays on, Wi-Fi arcs radiate from the antenna and little data packets fly toward the laptop. It sits beside the laptop on wide screens and in front of it on phones. To remove it, delete the `buildESP32()` / `espWrap` lines in `js/laptop.js`.
+The 3D board is your actual XIAO ESP32-S3 CAD model, converted from the `.step` file to `assets/xiao-esp32s3.glb` (270 KB, real colours: black PCB, gold castellated pads, steel USB-C, U.FL antenna connector). The printed module label is the crop of your top-view photo, `assets/xiao-label.jpg`. Around it:
+
+- **Amber user LED blinks** once a second and lights the board; the red charge LED stays on. Both sit where they are on the real board.
+- **Wi-Fi arcs** radiate from the antenna connector and **data packets** fly toward the laptop.
+- Beside the laptop on wide screens, in front of it on phones; it floats on its own and shrinks/drifts with the scroll.
+- If the model fails to load, a simple procedural ESP32 is shown instead.
+- Loaded with `js/vendor/GLTFLoader.js` (three r128 example loader, vendored so there's no extra CDN).
+
+To swap the board, replace `assets/xiao-esp32s3.glb` (keep the long axis along x, USB end at +x, about 2.5 units long) and adjust the `XIAO` constants (label rect, LED positions, antenna) near `loadXiao()` in `js/laptop.js`. Convert STEP to GLB with `pip install cascadio trimesh` then `cascadio.step_to_glb(...)`.
 
 ## Swap in your own laptop model (.glb)
 
