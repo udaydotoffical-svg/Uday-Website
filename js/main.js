@@ -48,10 +48,11 @@
       ? `<iframe class="frame" data-src="${esc(v.url)}" title="Live preview of ${esc(p.title)}" loading="lazy"
            sandbox="allow-scripts allow-same-origin" referrerpolicy="no-referrer" tabindex="-1"
            width="1280" height="800"></iframe>
+         ${v.interactive ? `<button type="button" class="view-lock" data-cursor="INTERACT"><span>Click to use Knowura here</span></button>` : ''}
          <div class="skeleton" aria-hidden="true"><span class="spinner"></span><span>loading live preview</span></div>`
       : '';
     return `
-      <div class="browser" data-embed="${v.embed ? '1' : '0'}">
+      <div class="browser" data-embed="${v.embed ? '1' : '0'}" data-interactive="${v.interactive ? '1' : '0'}">
         <div class="browser-bar">
           <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="urlbar input-look">${esc(v.displayUrl)}</span>
@@ -115,7 +116,7 @@
           ${pr.items
             .map(
               (p, i) => `
-            <article class="project glass reveal ${i % 2 ? 'flip' : ''}" id="project-${esc(p.id)}">
+            <article class="project glass reveal ${i % 2 ? 'flip' : ''} ${p.wide ? 'wide' : ''}" id="project-${esc(p.id)}">
               <div class="project-copy">
                 <p class="kicker">${esc(p.kicker)}</p>
                 <h3>${esc(p.title)}</h3>
@@ -223,6 +224,14 @@
     };
     fit();
     if ('ResizeObserver' in window) new ResizeObserver(fit).observe(view);
+
+    // desktop: the frame is view-only until you click it; it re-locks when the mouse leaves so page scroll is never hijacked
+    const lock = $('.view-lock', b);
+    if (lock) {
+      lock.addEventListener('click', () => b.classList.add('is-live'));
+      view.addEventListener('pointerleave', () => b.classList.remove('is-live'));
+      document.addEventListener('keydown', (e) => e.key === 'Escape' && b.classList.remove('is-live'));
+    }
 
     if (!frame) return;
     let settled = false;

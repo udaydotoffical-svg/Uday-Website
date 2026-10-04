@@ -46,6 +46,8 @@
       if (p < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
+    // laggy device? always settle on the real text
+    setTimeout(() => (el.textContent = text), dur + 250);
   }
 
   /* ---------- boot loader + hero intro ---------- */
@@ -176,7 +178,7 @@
 
   $$('.project').forEach((pr) => {
     const vis = $('.project-visual', pr);
-    if (vis) vis.dataset.cursor = $('.device', pr) ? 'DEMO' : $('.browser', pr) ? 'LIVE' : 'VIEW';
+    if (vis && !pr.classList.contains('wide')) vis.dataset.cursor = $('.device', pr) ? 'DEMO' : 'VIEW';
     const a = $('.project-copy .btn', pr);
     if (a) a.dataset.cursor = 'OPEN';
   });
@@ -237,7 +239,7 @@
     });
 
     // 3D tilt + glare on project panels
-    $$('.project').forEach((p) => {
+    $$('.project:not(.wide)').forEach((p) => {
       p.addEventListener('pointermove', (e) => {
         const r = p.getBoundingClientRect();
         const px = (e.clientX - r.left) / r.width - 0.5;

@@ -175,3 +175,7 @@ html.js:not(.is-intro) .hero-copy > .eyebrow { clip-path: inset(0 100% 0 0); }
   .mq-b { transform: translateY(-50%) rotate(9deg); }
   .mq-c { transform: translateY(-50%) rotate(-9deg); }
 }
+
+/* inside a live Knowura frame the real cursor takes over (the page can't see the mouse over an iframe) */
+.has-cursor:has(.browser.is-live) :is(.cursor-dot, .cursor-ring) { opacity: 0 !important; }
+.has-cursor .browser.is-live, .has-cursor .browser.is-live * { cursor: auto; }

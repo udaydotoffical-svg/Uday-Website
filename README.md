@@ -77,7 +77,9 @@ Put the file in `models/laptop.glb`, then uncomment `glbUrl: 'models/laptop.glb'
 
 ## The Knowura live preview (iframe)
 
-The frame is **view only**: `sandbox="allow-scripts allow-same-origin"`, `loading="lazy"`, `pointer-events: none`, scaled from a 1280px-wide desktop layout. Google sign-in cannot work inside an iframe, hence the **Open Knowura** button.
+On desktop the Knowura panel is full-width with a big frame (`wide: true` / `interactive: true` in `js/content.js`). Click the frame to use the site inside it; the mouse leaving or Esc locks it again so page scrolling is never hijacked. On phones and tablets it stays view-only.
+
+The frame is **view only until clicked** (and always on touch devices): `sandbox="allow-scripts allow-same-origin"`, `loading="lazy"`, `pointer-events: none`, scaled from a 1280px-wide desktop layout. Google sign-in cannot work inside an iframe, hence the **Open Knowura** button.
 
 A page can't detect a blocked frame from JavaScript (blocked, refused and healthy all look alike). So `api/embed-check.js` reads Knowura's response headers on the server. If framing is blocked, the page shows the screenshot with a note instead of a browser error page.
 

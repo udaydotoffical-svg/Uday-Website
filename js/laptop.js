@@ -78,7 +78,7 @@
 
   const TERM_LINES = [
     { t: '$ whoami', c: '#eaf6ff', prompt: true },
-    { t: 'uday singh // firmware + hardware', c: '#8fa6cc' },
+    { t: 'uday singh // firmware dev', c: '#8fa6cc' },
     { t: '$ ./flash --board samata', c: '#eaf6ff', prompt: true },
     { t: '[ok] eeg ........ online', c: '#22e5ff' },
     { t: '[ok] imu ........ online', c: '#22e5ff' },

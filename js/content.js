@@ -52,8 +52,10 @@ window.SITE = {
           'Knowura is an education AI app with a dark ocean-blue glass interface and a sidebar chat layout. Ask a question, learn the answer, and keep every conversation one click away.',
         tags: ['Education', 'AI', 'Chat UI', 'Glass UI', 'Vercel'],
         link: { label: 'Open Knowura', href: 'https://knowura.vercel.app' },
+        wide: true, // full-width panel with a big frame
         visual: {
           type: 'browser',
+          interactive: true, // desktop: click the frame to use the site (phones stay view-only)
           embed: true, // false = skip the iframe, show only the fallback image
           url: 'https://knowura.vercel.app',
           displayUrl: 'knowura.vercel.app',

@@ -155,10 +155,10 @@ a { color: var(--cyan); }
   height: 100svh;
   z-index: 0;
   pointer-events: none;
-  overflow: hidden;
+  overflow-x: clip; /* never clip the bottom: SINGH may hang past the fold */
 }
 .name-stack {
-  --u: clamp(52px, 8.2vw, 140px);
+  --u: clamp(48px, min(8.2vw, 12.5vh), 140px);
   position: absolute;
   left: 70%;
   top: 49%;
@@ -190,8 +190,7 @@ a { color: var(--cyan); }
   top: 2.2em;
   transform: rotate(3.5deg);
   color: var(--cyan);
-  background: var(--panel-strong);
-  backdrop-filter: blur(24px) saturate(150%);
+  background: color-mix(in srgb, var(--blue-deep) 38%, var(--dark));
   text-shadow: 4px 4px 0 var(--ink);
 }
 .icon { width: 1.15em; height: 1.15em; flex: none; }
@@ -503,3 +502,32 @@ main { position: relative; z-index: 1; }
   .star, .skeleton, .spinner, .head .ring, .head .led { animation: none; }
   .js-reveal .reveal { opacity: 1; translate: 0 0; transition: none; }
 }
+
+/* ---------- wide Knowura panel: big frame, interactive on desktop ---------- */
+.project.wide { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+.project.wide .project-copy { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 4px 40px; align-items: start; }
+.project.wide .kicker, .project.wide h3 { grid-column: 1; }
+.project.wide .project-copy > p:not(.kicker) { grid-column: 2; grid-row: 1 / span 2; margin: 0; align-self: center; }
+.project.wide .tags, .project.wide .btn { grid-column: 1 / -1; }
+.project.wide .tags { margin-top: 8px; }
+.project.wide .project-copy .btn { justify-self: start; }
+.project.wide .project-visual { order: 2; }
+@media (min-width: 1320px) { .project.wide { margin-inline: -90px; padding: 44px; } }
+@media (max-width: 860px) { .project.wide .project-copy { display: block; } }
+
+.view-lock {
+  position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; border: 0;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: linear-gradient(180deg, transparent 60%, rgba(5, 7, 15, 0.55));
+  color: var(--cyan); font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+  transition: opacity 0.25s;
+}
+.view-lock span { margin-bottom: 18px; padding: 8px 16px; border: 2px solid var(--ink); border-radius: 10px; background: var(--panel-strong); backdrop-filter: blur(10px); box-shadow: var(--shadow-sm); }
+.view-lock:hover span { background: rgba(47, 107, 255, 0.35); }
+.browser.is-live .view-lock { opacity: 0; pointer-events: none; }
+.browser.is-live .frame { pointer-events: auto; }
+.browser.is-live { box-shadow: var(--shadow-lg), 0 0 0 3px var(--cyan); }
+.browser .frame { cursor: auto; }
+/* phones and tablets stay view-only */
+@media (max-width: 860px), (pointer: coarse) { .view-lock { display: none; } .browser.is-live .frame { pointer-events: none; } }
+.browser.is-fallback .view-lock { display: none; }
