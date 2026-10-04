@@ -80,9 +80,9 @@
     { t: '$ whoami', c: '#eaf6ff', prompt: true },
     { t: 'uday singh // firmware + hardware', c: '#8fa6cc' },
     { t: '$ ./flash --board samata', c: '#eaf6ff', prompt: true },
-    { t: '[ok] eeg ........ 250hz', c: '#22e5ff' },
-    { t: '[ok] imu ........ 100hz', c: '#22e5ff' },
-    { t: '[ok] ble ........ paired', c: '#22e5ff' },
+    { t: '[ok] eeg ........ online', c: '#22e5ff' },
+    { t: '[ok] imu ........ online', c: '#22e5ff' },
+    { t: '[ok] firmware .. running', c: '#22e5ff' },
     { t: '$ ./talk --to software', c: '#eaf6ff', prompt: true },
     { t: '> hello, world', c: '#2f6bff' },
   ];

@@ -7,6 +7,8 @@
  * visual.type:
  *   'browser' -> fake browser window with a live <iframe> (set embed:false to show only the fallback image)
  *   'media'   -> image, or a video if `video` is set
+ *   'signal'  -> animated EEG/IMU demo monitor (no assets needed)
+ * `link` is optional: leave it out and a `badge` line is shown instead.
  */
 window.SITE = {
   name: 'Uday Singh',
@@ -64,14 +66,14 @@ window.SITE = {
         title: 'SAMATA',
         kicker: 'Wearable EEG + IMU headband',
         description:
-          'Samata is a wearable headband that reads EEG and IMU signals, built for WRO Nationals. Brain activity and head motion are picked up by the sensors and handled by custom firmware.',
+          'Samata is a wearable headband that reads EEG and IMU signals, built for WRO Nationals. I was the firmware developer on the team, writing the code that runs on the device.',
         tags: ['EEG', 'IMU', 'Firmware', 'Wearable', 'WRO Nationals'],
-        link: { label: 'View Samata', href: 'https://github.com/udaydotoffical-svg' }, // PLACEHOLDER: point at the Samata repo or write-up
+        badge: 'Built for WRO Nationals · firmware by me', // shown instead of a button when there is no link
+        // link: { label: 'View Samata', href: '...' }, // optional: leave out for no button
         visual: {
-          type: 'media',
-          image: 'assets/samata-placeholder.svg', // PLACEHOLDER: swap for your photo
-          video: '', // optional: e.g. 'assets/samata-demo.mp4' (plays muted on loop)
-          alt: 'Samata EEG and IMU headband',
+          type: 'signal', // animated demo signal monitor. Use type: 'media' + image/video for a real photo instead.
+          title: 'samata // signal monitor',
+          alt: 'Animated demo of the Samata EEG and IMU signal monitor',
         },
       },
     ],
@@ -88,17 +90,12 @@ window.SITE = {
       {
         when: '2026',
         title: 'WRO Nationals · Samata',
-        text: 'Built Samata, a wearable EEG and IMU headband, for WRO Nationals.',
+        text: 'Wrote the firmware for Samata, a wearable EEG and IMU headband built for WRO Nationals.',
       },
       {
         when: 'Now',
         title: 'Knowura',
-        text: 'Building and shipping the education AI app.',
-      },
-      {
-        when: 'Now',
-        title: 'Samata',
-        text: 'Still building on the headband hardware and firmware.',
+        text: 'Fully focused on building and shipping the education AI app.',
       },
     ],
   },

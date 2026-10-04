@@ -57,8 +57,8 @@ Everything is in `js/content.js`. To **add a project**, copy one object inside `
 |---|---|---|
 | Real logo | `assets/logo-k.svg` and `assets/favicon.svg` | Placeholder K (pencil stem + open book arms), used as the browser-tab favicon. Replace both files, keep the names. The top bar has no logo. |
 | Knowura screenshot | `assets/knowura-fallback.svg` → `projects.items[0].visual.fallback` | Shown while loading and if the live frame is blocked. Use a 16:10 png/webp. |
-| Samata photo or video | `assets/samata-placeholder.svg` → `projects.items[1].visual.image`, optional `.video` | A video plays muted on loop with the image as poster. |
-| Samata link | `projects.items[1].link.href` | Currently points at your GitHub profile. Use the repo or a write-up. |
+| Samata photo or video (optional) | `projects.items[1].visual` in `js/content.js` | The panel is an animated demo signal monitor, no assets needed. For a real photo or video, change it to `type: 'media'` with `image` (and optional `video`). |
+| Samata link (optional) | `projects.items[1].link` | Left out on purpose (the repo is private); a badge line shows instead. Add `link: { label, href }` to get a button. |
 | Site URL | `siteUrl` in `js/content.js`, plus the OG tags in `index.html` | `https://uday-singh.vercel.app` is a guess. |
 | OG image | `assets/og.png` | 1200x630, regenerate if you change your name block. |
 | Timeline | `timeline.items` in `js/content.js` | Wording is a draft built from what you told me; edit freely. |
@@ -78,6 +78,8 @@ Put the file in `models/laptop.glb`, then uncomment `glbUrl: 'models/laptop.glb'
 The frame is **view only**: `sandbox="allow-scripts allow-same-origin"`, `loading="lazy"`, `pointer-events: none`, scaled from a 1280px-wide desktop layout. Google sign-in cannot work inside an iframe, hence the **Open Knowura** button.
 
 A page can't detect a blocked frame from JavaScript (blocked, refused and healthy all look alike). So `api/embed-check.js` reads Knowura's response headers on the server. If framing is blocked, the page shows the screenshot with a note instead of a browser error page.
+
+**What's blocking it right now:** Knowura's own `vercel.json` sends `X-Frame-Options: SAMEORIGIN` and `frame-ancestors 'self'`, so browsers refuse to show it anywhere but knowura.vercel.app. Until that changes, the portfolio shows the screenshot fallback. A ready-made fix is in `docs/knowura-frame-fix.patch` (apply it in the Knowura repo with `git apply`, change the domain to yours if it differs, then redeploy). It only allows *your portfolio* to frame Knowura, not every site.
 
 **Check Knowura's headers yourself:**
 

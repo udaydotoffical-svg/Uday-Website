@@ -328,6 +328,7 @@ main { position: relative; z-index: 1; }
   padding: 36px;
 }
 .project.flip .project-visual { order: -1; }
+.project-copy, .project-visual { min-width: 0; }
 .kicker { margin: 0 0 6px; color: var(--cyan); font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; }
 .project h3 { margin: 0 0 14px; font-size: clamp(34px, 4.4vw, 56px); font-weight: 400; line-height: 1; text-shadow: 3px 3px 0 var(--ink); }
 .project-copy p { font-size: 18px; color: var(--text); }
@@ -387,11 +388,44 @@ main { position: relative; z-index: 1; }
 .browser.is-fallback .browser-note::before { content: 'Live preview unavailable, showing a screenshot.'; color: var(--cyan); }
 .browser-note { display: none; margin: 0; padding: 8px 12px; font-size: 14px; line-height: 1.4; color: var(--text-dim); border-top: 3px solid var(--ink); }
 
+/* Samata signal monitor */
+.demo-chip { flex: none; padding: 2px 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); border: 2px solid var(--ink); border-radius: 8px; background: rgba(34,229,255,0.1); }
+.device-body {
+  position: absolute; inset: 0;
+  display: grid; grid-template-columns: 34% minmax(0, 1fr); gap: 12px; padding: 12px;
+  background:
+    linear-gradient(rgba(34,229,255,0.07) 1px, transparent 1px) 0 0 / 22px 22px,
+    linear-gradient(90deg, rgba(34,229,255,0.07) 1px, transparent 1px) 0 0 / 22px 22px,
+    radial-gradient(80% 80% at 20% 10%, color-mix(in srgb, var(--blue-deep) 60%, transparent), transparent 70%),
+    var(--dark);
+}
+.device-left { display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 0; }
+.head { width: 100%; max-height: 78%; flex: 1; min-height: 0; overflow: visible; }
+.head .skull { fill: var(--panel-strong); stroke: var(--text-dim); stroke-width: 3; stroke-linejoin: round; }
+.head .ear { fill: var(--panel-strong); stroke: var(--text-dim); stroke-width: 3; }
+.head .face { fill: none; stroke: var(--text-dim); stroke-width: 3; stroke-linecap: square; opacity: 0.6; }
+.head .band { fill: none; stroke: var(--ink); stroke-width: 14; stroke-linecap: square; }
+.head .band + .ring, .head .ring { fill: none; stroke: var(--cyan); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: ping 2.2s ease-out infinite; }
+.head .ring.r2 { animation-delay: 0.7s; } .head .ring.r3 { animation-delay: 1.4s; }
+.head .node { fill: var(--cyan); stroke: var(--ink); stroke-width: 2.5; filter: drop-shadow(0 0 4px var(--cyan)); }
+.head .mod { fill: var(--blue); stroke: var(--ink); stroke-width: 3; }
+.head .led { fill: var(--text); animation: twinkle 1.6s steps(2, end) infinite; }
+@keyframes ping { 0% { transform: scale(1); opacity: 0.9; } 100% { transform: scale(2.6); opacity: 0; } }
+.leds { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.leds li { display: flex; align-items: center; gap: 5px; padding: 1px 7px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); border: 2px solid var(--ink); border-radius: 8px; background: var(--panel-strong); }
+.leds li::before { content: ''; width: 6px; height: 6px; background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.sig { display: flex; flex-direction: column; gap: 4px; min-height: 0; }
+.sig-label { font-size: 11px; letter-spacing: 0.1em; color: var(--text-dim); }
+.sig-panel { min-height: 0; border: 2px solid var(--ink); border-radius: 10px; background: var(--panel-strong); box-shadow: inset 2px 2px 0 rgba(0,0,0,0.4); overflow: hidden; }
+.eegp { flex: 1; } .imup { flex: 0 0 26%; }
+.sig-panel canvas { display: block; width: 100%; height: 100%; }
+.badge { display: inline-block; margin: 26px 0 0; padding: 8px 14px; font-size: 16px; color: var(--cyan); border-width: 2px; border-radius: 10px; box-shadow: var(--shadow-sm); }
+
 .media { overflow: hidden; aspect-ratio: 16 / 10; }
 .media img, .media video { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 @media (max-width: 860px) {
-  .project { grid-template-columns: 1fr; padding: 22px; gap: 24px; }
+  .project { grid-template-columns: minmax(0, 1fr); padding: 22px; gap: 24px; }
   .project.flip .project-visual { order: 0; }
 }
 
@@ -466,6 +500,6 @@ main { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .btn, .laptop-stage { transition: none; }
-  .star, .skeleton, .spinner { animation: none; }
+  .star, .skeleton, .spinner, .head .ring, .head .led { animation: none; }
   .js-reveal .reveal { opacity: 1; translate: 0 0; transition: none; }
 }

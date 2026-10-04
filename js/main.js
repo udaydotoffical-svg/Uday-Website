@@ -72,6 +72,40 @@
     return `<div class="media glass-light">${inner}</div>`;
   }
 
+  function signalVisual(p) {
+    const v = p.visual;
+    return `
+      <div class="browser device" role="img" aria-label="${esc(v.alt)}">
+        <div class="browser-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="urlbar input-look">${esc(v.title)}</span>
+          <span class="demo-chip">demo signal</span>
+        </div>
+        <div class="browser-view">
+          <div class="device-body" aria-hidden="true">
+            <div class="device-left">
+              <svg class="head" viewBox="0 0 120 150">
+                <path class="skull" d="M28 62C28 22 92 22 92 62V90C92 114 77 132 60 132S28 114 28 90Z"/>
+                <rect class="ear" x="20" y="74" width="9" height="20"/><rect class="ear" x="91" y="74" width="9" height="20"/>
+                <path class="band" d="M25 66C40 48 80 48 95 66"/>
+                <circle class="ring" cx="42" cy="58" r="6"/><circle class="ring r2" cx="78" cy="58" r="6"/><circle class="ring r3" cx="60" cy="52" r="6"/>
+                <circle class="node" cx="42" cy="58" r="5"/><circle class="node" cx="78" cy="58" r="5"/><circle class="node" cx="60" cy="52" r="5"/>
+                <rect class="mod" x="52" y="40" width="16" height="9"/><rect class="led" x="58" y="43" width="4" height="3"/>
+                <path class="face" d="M46 96h8M66 96h8M52 112c4 4 12 4 16 0"/>
+              </svg>
+              <ul class="leds"><li>EEG</li><li>IMU</li><li>Firmware</li></ul>
+            </div>
+            <div class="sig">
+              <span class="sig-label">EEG</span>
+              <div class="sig-panel eegp"><canvas class="eeg"></canvas></div>
+              <span class="sig-label">IMU</span>
+              <div class="sig-panel imup"><canvas class="imu"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
   function renderProjects() {
     const pr = S.projects;
     $('#projects').innerHTML = `
@@ -87,9 +121,15 @@
                 <h3>${esc(p.title)}</h3>
                 <p>${esc(p.description)}</p>
                 <ul class="tags">${tags(p.tags)}</ul>
-                <a class="btn" href="${esc(p.link.href)}" target="_blank" rel="noopener">${esc(p.link.label)} ${icon('i-arrow')}</a>
+                ${
+                  p.link
+                    ? `<a class="btn" href="${esc(p.link.href)}" target="_blank" rel="noopener">${esc(p.link.label)} ${icon('i-arrow')}</a>`
+                    : p.badge
+                      ? `<p class="badge glass-light">${esc(p.badge)}</p>`
+                      : ''
+                }
               </div>
-              <div class="project-visual">${p.visual.type === 'browser' ? browserVisual(p) : mediaVisual(p)}</div>
+              <div class="project-visual">${p.visual.type === 'browser' ? browserVisual(p) : p.visual.type === 'signal' ? signalVisual(p) : mediaVisual(p)}</div>
             </article>`
             )
             .join('')}
@@ -223,6 +263,128 @@
       });
   });
 
+  /* ---------- Samata demo signal monitor ---------- */
+
+  $$('.device').forEach((dev) => {
+    const eeg = $('.eeg', dev);
+    const imu = $('.imu', dev);
+    const ctxE = eeg.getContext('2d');
+    const ctxI = imu.getContext('2d');
+    const COLORS = ['#22e5ff', '#2f6bff', '#eaf6ff', '#22e5ff'];
+    let dpr = 1;
+
+    const fit = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      [eeg, imu].forEach((c) => {
+        const r = c.getBoundingClientRect();
+        c.width = Math.max(1, Math.round(r.width * dpr));
+        c.height = Math.max(1, Math.round(r.height * dpr));
+      });
+    };
+
+    // deterministic fake brainwave: a few detuned sines plus a travelling spike
+    const wave = (x, t, k) => {
+      const base = 0.5 * Math.sin(x * 0.045 + t * 2.1 + k) + 0.3 * Math.sin(x * 0.11 - t * 3.3 + k * 2);
+      const burst = 0.5 + 0.5 * Math.sin(x * 0.012 + t * 0.7 + k);
+      const fast = 0.28 * Math.sin(x * 0.33 + t * 6.1 + k * 3.1) * burst;
+      const sx = ((t * 150 + k * 90) % 520) - 60;
+      const spike = 0.9 * Math.exp(-Math.pow((x - sx) / 7, 2)) * (k % 2 ? -1 : 1);
+      return base + fast + spike;
+    };
+
+    function drawEEG(t) {
+      const w = eeg.width;
+      const h = eeg.height;
+      ctxE.clearRect(0, 0, w, h);
+      const rows = 4;
+      const rh = h / rows;
+      ctxE.lineJoin = 'miter';
+      ctxE.lineWidth = Math.max(2, 2 * dpr);
+      for (let k = 0; k < rows; k++) {
+        const cy = rh * (k + 0.5);
+        ctxE.strokeStyle = 'rgba(143,166,204,0.18)';
+        ctxE.lineWidth = 1;
+        ctxE.beginPath();
+        ctxE.moveTo(0, cy);
+        ctxE.lineTo(w, cy);
+        ctxE.stroke();
+        ctxE.lineWidth = Math.max(2, 2 * dpr);
+        ctxE.strokeStyle = COLORS[k];
+        ctxE.shadowColor = COLORS[k];
+        ctxE.shadowBlur = 6 * dpr;
+        ctxE.beginPath();
+        const step = 3 * dpr;
+        for (let x = 0; x <= w; x += step) {
+          const y = cy + wave(x / dpr, t, k) * rh * 0.32;
+          x === 0 ? ctxE.moveTo(x, y) : ctxE.lineTo(x, y);
+        }
+        ctxE.stroke();
+        ctxE.shadowBlur = 0;
+      }
+    }
+
+    function drawIMU(t) {
+      const w = imu.width;
+      const h = imu.height;
+      ctxI.clearRect(0, 0, w, h);
+      const vals = [Math.sin(t * 1.3), Math.sin(t * 0.9 + 2) * 0.8, Math.sin(t * 1.9 + 4) * 0.6];
+      const cols = ['#22e5ff', '#2f6bff', '#eaf6ff'];
+      const rh = h / 3;
+      const pad = 22 * dpr;
+      ctxI.font = `${Math.round(11 * dpr)}px "Geist Pixel", monospace`;
+      ctxI.textBaseline = 'middle';
+      vals.forEach((v, i) => {
+        const cy = rh * (i + 0.5);
+        const mid = pad + (w - pad) / 2;
+        ctxI.fillStyle = '#8fa6cc';
+        ctxI.fillText('XYZ'[i], 6 * dpr, cy);
+        ctxI.fillStyle = 'rgba(143,166,204,0.18)';
+        ctxI.fillRect(pad, cy - 1, w - pad, 2);
+        ctxI.fillStyle = cols[i];
+        const bw = v * ((w - pad) / 2 - 4 * dpr);
+        ctxI.fillRect(bw >= 0 ? mid : mid + bw, cy - rh * 0.22, Math.abs(bw), rh * 0.44);
+        ctxI.fillStyle = '#eaf6ff';
+        ctxI.fillRect(mid - 1, cy - rh * 0.34, 2, rh * 0.68);
+      });
+    }
+
+    let visible = false;
+    let raf = 0;
+    const frame = (now) => {
+      raf = requestAnimationFrame(frame);
+      const t = now / 1000;
+      drawEEG(t);
+      drawIMU(t);
+    };
+    const sync = () => {
+      if (visible && !document.hidden && !reduced) {
+        if (!raf) raf = requestAnimationFrame(frame);
+      } else if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    fit();
+    const still = () => {
+      drawEEG(3);
+      drawIMU(3);
+    };
+    still();
+    if ('ResizeObserver' in window)
+      new ResizeObserver(() => {
+        fit();
+        still();
+      }).observe(dev);
+    if ('IntersectionObserver' in window)
+      new IntersectionObserver((en) => {
+        visible = en[0].isIntersecting;
+        sync();
+      }).observe(dev);
+    document.addEventListener('visibilitychange', sync);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(still);
+  });
+
   /* ---------- contact form: Formspree if configured, else mailto ---------- */
 
   const form = $('#contact-form');
@@ -304,7 +466,11 @@
     { cmd: 'goto quotes', desc: 'words to live by', run: go('quotes') },
     { cmd: 'goto contact', desc: 'say hi', run: go('contact') },
     { cmd: 'goto top', desc: 'back to the laptop', run: () => window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }) },
-    ...S.projects.items.map((p) => ({ cmd: 'open ' + p.id, desc: p.link.href.replace(/^https?:\/\//, ''), run: open(p.link.href) })),
+    ...S.projects.items.map((p) =>
+      p.link
+        ? { cmd: 'open ' + p.id, desc: p.link.href.replace(/^https?:\/\//, ''), run: open(p.link.href) }
+        : { cmd: 'goto ' + p.id, desc: p.kicker.toLowerCase(), run: go('project-' + p.id) }
+    ),
     { cmd: 'open github', desc: S.links.github.replace(/^https?:\/\//, ''), run: open(S.links.github) },
     { cmd: 'open instagram', desc: S.links.instagramHandle, run: open(S.links.instagram) },
     { cmd: 'email', desc: S.links.email, run: () => (window.location.href = 'mailto:' + S.links.email) },
