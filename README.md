@@ -55,7 +55,7 @@ Everything is in `js/content.js`. To **add a project**, copy one object inside `
 
 | What | Where | Notes |
 |---|---|---|
-| Real logo | `assets/logo-k.svg` and `assets/favicon.svg` | Placeholder K (pencil stem + open book arms). Replace both files, keep the names. "NOWURA" is live text next to it. |
+| Real logo | `assets/logo-k.svg` and `assets/favicon.svg` | Placeholder K (pencil stem + open book arms), used as the browser-tab favicon. Replace both files, keep the names. The top bar has no logo. |
 | Knowura screenshot | `assets/knowura-fallback.svg` → `projects.items[0].visual.fallback` | Shown while loading and if the live frame is blocked. Use a 16:10 png/webp. |
 | Samata photo or video | `assets/samata-placeholder.svg` → `projects.items[1].visual.image`, optional `.video` | A video plays muted on loop with the image as poster. |
 | Samata link | `projects.items[1].link.href` | Currently points at your GitHub profile. Use the repo or a write-up. |
@@ -110,7 +110,7 @@ Press `/` anywhere (or tap the `/` button in the nav). Type to filter, arrows to
 
 ## Performance and accessibility notes
 
-- Scripts are `defer`; WebGL boots after first paint. Pixel ratio is capped at 2, rendering pauses off-screen and in hidden tabs.
+- Three.js and the laptop code are not loaded until the first interaction (mouse move, touch, scroll, key) or 6 s after page load (`LAPTOP_BOOT_MS` in `js/main.js`), then the laptop fades in. This keeps the page fast. Pixel ratio is capped at 2, rendering pauses off-screen and in hidden tabs.
 - `prefers-reduced-motion`: the laptop renders a single still frame, particles and stars stop, no scroll animations.
 - No WebGL: a flat SVG laptop is shown instead.
-- Run Lighthouse on the deployed URL (Chrome DevTools, Lighthouse tab). The main cost is the Three.js file (~600 KB).
+- Lighthouse (local run, software rendering, simulated mobile): performance 97 mobile / 99 desktop, accessibility 100, best practices 96, SEO 100. Re-run on your deployed URL (Chrome DevTools, Lighthouse tab).

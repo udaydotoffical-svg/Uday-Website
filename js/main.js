@@ -60,7 +60,7 @@
           <img class="fallback" src="${esc(v.fallback)}" alt="${esc(v.alt)}" width="1280" height="800" loading="lazy" decoding="async">
           ${embed}
         </div>
-        <p class="browser-note">View only. Sign-in does not work inside a frame, so use the button to open the real site.</p>
+        <p class="browser-note"></p>
       </div>`;
   }
 
@@ -380,17 +380,55 @@
   });
 
   /* ---------- 3D laptop ---------- */
+  // Three.js is ~600 KB and booting WebGL blocks the main thread for a moment, so it is loaded
+  // after the page is already usable: on the first interaction, or LAPTOP_BOOT_MS after load.
+  const THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'; // pinned
+  const LAPTOP_BOOT_MS = 6000;
+  const stage = $('#stage');
+  const showStage = () => stage.classList.remove('is-booting');
+
+  const loadScript = (src) =>
+    new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      if (/^https?:/.test(src)) s.crossOrigin = 'anonymous';
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
 
   function startLaptop() {
-    if (!window.THREE || !window.LaptopHero) return;
-    window.LaptopHero.init({
-      canvas: $('#laptop-canvas'),
-      stage: $('#stage'),
-      track: $('#hero'),
-      zone: [$('#hero'), $('#about')],
-      // glbUrl: 'models/laptop.glb', // swap in your own model here
-    });
+    loadScript(THREE_URL)
+      .then(() => loadScript('js/laptop.js'))
+      .then(() => {
+        const hero = window.LaptopHero.init({
+          canvas: $('#laptop-canvas'),
+          stage,
+          track: $('#hero'),
+          zone: [$('#hero'), $('#about')],
+          onFallback: showStage,
+          // glbUrl: 'models/laptop.glb', // swap in your own model here
+        });
+        if (hero) requestAnimationFrame(showStage);
+      })
+      .catch(() => {
+        // CDN blocked or offline: show the flat SVG laptop instead
+        document.documentElement.classList.add('no-webgl');
+        showStage();
+      });
   }
-  // let the page paint first, then boot WebGL
-  requestAnimationFrame(() => setTimeout(startLaptop, 0));
+
+  let booted = false;
+  const boot = () => {
+    if (booted) return;
+    booted = true;
+    ['pointermove', 'pointerdown', 'touchstart', 'wheel', 'keydown', 'scroll'].forEach((e) =>
+      window.removeEventListener(e, boot)
+    );
+    startLaptop();
+  };
+  ['pointermove', 'pointerdown', 'touchstart', 'wheel', 'keydown', 'scroll'].forEach((e) =>
+    window.addEventListener(e, boot, { passive: true })
+  );
+  window.addEventListener('load', () => setTimeout(boot, LAPTOP_BOOT_MS));
 })();

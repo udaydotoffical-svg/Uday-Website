@@ -37,10 +37,6 @@
   </svg>
 
   <header class="nav">
-    <a class="brand" href="#top" aria-label="Uday Singh, home">
-      <img src="assets/logo-k.svg" alt="" width="36" height="36">
-      <span class="brand-word">NOWURA</span>
-    </a>
     <nav class="nav-links" id="nav-links" aria-label="Sections"></nav>
     <button class="btn nav-cmd" id="open-palette" type="button" aria-label="Open command palette">/</button>
   </header>
@@ -61,7 +57,7 @@
   </div>
 
   <!-- fixed 3D stage sits behind all content -->
-  <div class="laptop-stage" id="stage" aria-hidden="true">
+  <div class="laptop-stage is-booting" id="stage" aria-hidden="true">
     <canvas id="laptop-canvas"></canvas>
     <svg class="laptop-fallback" viewBox="0 0 240 160" fill="none" stroke="#22e5ff" stroke-width="3">
       <rect x="40" y="12" width="160" height="104" rx="8" fill="#050a1a"/>
@@ -106,9 +102,8 @@
 
   <noscript><p class="noscript">This site needs JavaScript. You can still reach Uday at <a href="mailto:uday.dot.offical@gmail.com">uday.dot.offical@gmail.com</a>.</p></noscript>
 
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+  <!-- Three.js (r128) and js/laptop.js are loaded by main.js on first interaction or after load + 6s -->
   <script defer src="js/content.js"></script>
-  <script defer src="js/laptop.js"></script>
   <script defer src="js/main.js"></script>
 </body>
 </html>
