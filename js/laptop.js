@@ -382,6 +382,7 @@
     let raf = 0;
     let last = 0;
     let startT = null;
+    let firstFrame = true;
 
     function visSize() {
       const h = 2 * CAM_Z * Math.tan((FOV * Math.PI) / 360);
@@ -441,7 +442,8 @@
 
       // scroll-driven root transform (damped)
       const tgt = targetFor(scrollProgress());
-      const k = reduced ? 1 : 1 - Math.exp(-dt * 5);
+      const k = reduced || firstFrame ? 1 : 1 - Math.exp(-dt * 5);
+      firstFrame = false;
       state.x = lerp(state.x, tgt.x, k);
       state.y = lerp(state.y, tgt.y, k);
       state.s = lerp(state.s, tgt.s, k);

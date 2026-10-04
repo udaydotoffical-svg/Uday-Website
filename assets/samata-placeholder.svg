@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800">
+  <!-- PLACEHOLDER for the Samata photo/video. Replace with your image and set it in content.js -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f2a80"/><stop offset="1" stop-color="#05070f"/></linearGradient>
+  </defs>
+  <rect width="1280" height="800" fill="url(#bg)"/>
+  <g fill="none" stroke="#22e5ff" stroke-width="10" stroke-linecap="square">
+    <path d="M300 470C300 250 420 170 640 170S980 250 980 470" />
+    <path d="M300 470c0 40 30 70 70 70M980 470c0 40-30 70-70 70" />
+  </g>
+  <g fill="#eaf6ff" stroke="#000" stroke-width="6">
+    <rect x="590" y="140" width="100" height="60" rx="8"/>
+    <rect x="262" y="440" width="80" height="80" rx="8" fill="#2f6bff"/>
+    <rect x="938" y="440" width="80" height="80" rx="8" fill="#2f6bff"/>
+  </g>
+  <g stroke="#22e5ff" stroke-width="5" fill="none" opacity=".8">
+    <path d="M120 640h200l30-60 40 120 40-170 50 110 30-40h480"/>
+  </g>
+  <text x="640" y="400" font-family="monospace" font-size="34" fill="#8fa6cc" text-anchor="middle">EEG + IMU headband</text>
+  <text x="640" y="450" font-family="monospace" font-size="26" fill="#8fa6cc" text-anchor="middle" opacity=".7">add your photo or video here</text>
+</svg>

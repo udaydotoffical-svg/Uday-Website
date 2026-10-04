@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800">
+  <!-- PLACEHOLDER screenshot of Knowura. Replace with a real screenshot (png/webp) and update content.js -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#071a3d"/><stop offset="1" stop-color="#05070f"/></linearGradient>
+    <radialGradient id="g" cx=".7" cy=".1" r=".7"><stop offset="0" stop-color="#2f6bff" stop-opacity=".45"/><stop offset="1" stop-color="#2f6bff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1280" height="800" fill="url(#bg)"/><rect width="1280" height="800" fill="url(#g)"/>
+  <rect x="0" y="0" width="300" height="800" fill="#0a1630" opacity=".85"/>
+  <rect x="24" y="28" width="252" height="52" rx="12" fill="#22e5ff" opacity=".9"/>
+  <g fill="#8fa6cc" opacity=".7">
+    <rect x="24" y="130" width="200" height="18" rx="6"/><rect x="24" y="176" width="240" height="18" rx="6"/>
+    <rect x="24" y="222" width="170" height="18" rx="6"/><rect x="24" y="268" width="220" height="18" rx="6"/>
+    <rect x="24" y="314" width="190" height="18" rx="6"/>
+  </g>
+  <rect x="360" y="90" width="520" height="90" rx="22" fill="#12224499" stroke="#2f6bff" stroke-opacity=".5" stroke-width="2"/>
+  <rect x="400" y="120" width="380" height="14" rx="6" fill="#eaf6ff" opacity=".8"/><rect x="400" y="146" width="260" height="14" rx="6" fill="#8fa6cc"/>
+  <rect x="560" y="230" width="640" height="190" rx="22" fill="#2f6bff" opacity=".35" stroke="#22e5ff" stroke-opacity=".5" stroke-width="2"/>
+  <g fill="#eaf6ff" opacity=".85"><rect x="600" y="266" width="520" height="14" rx="6"/><rect x="600" y="294" width="560" height="14" rx="6"/><rect x="600" y="322" width="440" height="14" rx="6"/><rect x="600" y="350" width="300" height="14" rx="6"/></g>
+  <rect x="360" y="690" width="840" height="72" rx="20" fill="#09122866" stroke="#000" stroke-width="4"/>
+  <text x="640" y="400" font-family="monospace" font-size="30" fill="#8fa6cc" text-anchor="middle" opacity=".0">knowura</text>
+  <text x="780" y="735" font-family="monospace" font-size="24" fill="#8fa6cc">Ask Knowura anything...</text>
+</svg>

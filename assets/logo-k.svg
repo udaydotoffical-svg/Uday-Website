@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- PLACEHOLDER K: pencil = stem, open book = arms. Replace this file with your real logo. -->
+  <!-- pencil (vertical stem) -->
+  <rect x="11" y="4" width="13" height="8" fill="#2f6bff" stroke="#000" stroke-width="3"/>
+  <rect x="11" y="12" width="13" height="36" fill="#22e5ff" stroke="#000" stroke-width="3"/>
+  <path d="M11 48h13l-6.5 12z" fill="#eaf6ff" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M15 56.5h5" stroke="#000" stroke-width="3"/>
+  <!-- open book (arms) -->
+  <path d="M26 31C34 21 44 13 58 9v20C46 29 36 30 26 31z" fill="#eaf6ff" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M26 31C34 41 44 49 58 53V33C46 33 36 32 26 31z" fill="#2f6bff" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M33 25c6-5 12-8 20-10M33 37c6 5 12 8 20 10" stroke="#000" stroke-width="2" opacity=".45"/>
+</svg>
