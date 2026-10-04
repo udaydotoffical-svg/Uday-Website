@@ -67,6 +67,16 @@ Everything is in `js/content.js`. To **add a project**, copy one object inside `
 | 3D laptop model | `glbUrl` line in `js/main.js` (commented) | See below. |
 | Formspree (optional) | `contact.formspreeId` in `js/content.js` | Empty = the form opens the visitor's email app (mailto). |
 
+## The "laptop" is a Surface Pro 11 + Flex Keyboard (black)
+
+Procedural, built in `buildSurface()` in `js/laptop.js`:
+- **Tablet:** black anodised aluminium, 13" 3:2 glass display (the live terminal), front camera + IR sensors in the top bezel, rear camera, power and volume buttons on the top edge, two USB-C ports and the Surface Connect port on the side, gold magnetic-connector pads along the bottom edge.
+- **Kickstand:** hinged on the back with real feet; its angle is computed from the tablet angle so it always rests on the surface (it swings out as the screen opens on load).
+- **Flex Keyboard:** magnetically attached along the bottom edge, with a backlit full QWERTY (Esc/F-row/fn/win keys, arrow cluster, one cyan accent key), glass haptic touchpad, and the Slim Pen held in the pen groove with a status LED.
+- Not affiliated with or endorsed by Microsoft; the shapes are an original illustration and carry no logos.
+
+`models/user-design-reference.glb` is your Tinkercad sketch (a simple wedge). The site uses the procedural model above instead; to use your own mesh, point `glbUrl` at a `.glb` (see below).
+
 ## The ESP32 next to the laptop (real Seeed XIAO ESP32-S3)
 
 The 3D board is your actual XIAO ESP32-S3 CAD model, converted from the `.step` file to `assets/xiao-esp32s3.glb` (270 KB, real colours: black PCB, gold castellated pads, steel USB-C, U.FL antenna connector). The printed module label is the crop of your top-view photo, `assets/xiao-label.jpg`. Around it:

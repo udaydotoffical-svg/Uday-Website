@@ -26,9 +26,9 @@
   const BASE_T = 0.12;
   const LID_T = 0.07;
   const LID_GAP = 0.07;
-  const SCREEN_W = 2.9;
-  const SCREEN_H = 1.85;
-  const OPEN_ANGLE = (105 * Math.PI) / 180;
+  const SCREEN_W = 2.99; // 13" 3:2 display
+  const SCREEN_H = 1.99;
+  const OPEN_ANGLE = (115 * Math.PI) / 180;
 
   const CAM_Z = 9.5;
   const FOV = 35;
@@ -182,96 +182,292 @@
     return new THREE.CanvasTexture(c);
   }
 
-  /* ---------- procedural laptop ---------- */
+  /* ---------- Surface Pro 11 (black) + Flex Keyboard ---------- */
 
-  function buildLaptop(screenMat) {
-    const laptop = new THREE.Group();
+  // Real proportions: 287 x 209 x 9.3 mm tablet (1 unit ~ 90 mm), 13" 3:2 PixelSense Flow display.
+  const TAB = { w: 3.2, d: 2.3, t: 0.105, gap: 0.03 };
+  const KB = { w: 3.2, d: 2.3, t: 0.07 };
+  const STAND = { len: 1.42, hingeFromBottom: 1.5, t: 0.03 };
+  const PITCH = 0.19;
+  const KEY_ROWS = [
+    ['esc:1.5', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'del:1.5'],
+    ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'back:2'],
+    ['tab:1.5', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\:1.5'],
+    ['caps:1.75', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', "'", 'enter:2.25'],
+    ['shift:2.25', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 'shift:2.75'],
+    ['ctrl:1.25', 'fn', 'win', 'alt', 'space:5.75', 'alt', 'cp', '<', '^v', '>'],
+  ];
 
-    const shell = new THREE.MeshStandardMaterial({ color: 0x141d40, metalness: 0.6, roughness: 0.48 });
-    const dark = new THREE.MeshStandardMaterial({ color: 0x0a1226, metalness: 0.3, roughness: 0.6 });
-
-    // base
-    const base = new THREE.Mesh(slab(W, D, BASE_T, 0.16, 0.025), shell);
-    base.position.y = BASE_T / 2;
-    laptop.add(base);
-
-    // keyboard deck (backlight glow between keys)
-    const deck = new THREE.Mesh(
-      new THREE.PlaneGeometry(W - 0.36, 1.2),
-      new THREE.MeshBasicMaterial({ color: 0x123a8c, toneMapped: false })
-    );
-    deck.rotation.x = -Math.PI / 2;
-    deck.position.set(0, BASE_T + 0.002, -0.28);
-    laptop.add(deck);
-
-    // keys
-    const cols = 14;
-    const rows = 4;
-    const pitch = 0.195;
-    const keyGeo = new THREE.BoxGeometry(0.165, 0.045, 0.165);
-    const keys = new THREE.InstancedMesh(keyGeo, dark, cols * rows);
-    const m = new THREE.Matrix4();
-    let n = 0;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        m.setPosition((c - (cols - 1) / 2) * pitch, BASE_T + 0.022, -0.74 + r * pitch);
-        keys.setMatrixAt(n++, m);
-      }
-    }
-    laptop.add(keys);
-    // space row
-    const space = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.045, 0.165), dark);
-    space.position.set(0, BASE_T + 0.022, -0.74 + rows * pitch);
-    laptop.add(space);
-    [-1, 1].forEach((s) => {
-      const k = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.045, 0.165), dark);
-      k.position.set(s * 1.1, BASE_T + 0.022, -0.74 + rows * pitch);
-      laptop.add(k);
+  function keyLayout() {
+    const out = [];
+    KEY_ROWS.forEach((row, r) => {
+      const widths = row.map((k) => parseFloat(k.split(':')[1] || '1'));
+      const total = widths.reduce((a, b) => a + b, 0);
+      let x = -(total * PITCH) / 2;
+      row.forEach((k, i) => {
+        const w = widths[i] * PITCH;
+        out.push({ label: k.split(':')[0], x: x + w / 2, r, w });
+        x += w;
+      });
     });
+    return out;
+  }
 
-    // trackpad
-    const pad = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.0, 0.5),
-      new THREE.MeshStandardMaterial({ color: 0x142046, metalness: 0.4, roughness: 0.35 })
+  function legendTexture(keys) {
+    const cw = 2048;
+    const ch = Math.round((cw * 6) / 15);
+    const cv = document.createElement('canvas');
+    cv.width = cw;
+    cv.height = ch;
+    const g = cv.getContext('2d');
+    const ppu = cw / (15 * PITCH); // pixels per world unit
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    keys.forEach((k) => {
+      const cx = cw / 2 + k.x * ppu;
+      const cy = (k.r + 0.5) * PITCH * ppu;
+      if (k.label === 'cp') {
+        // accent key (like a dedicated assistant key): glowing gradient dot, no brand mark
+        const gr = g.createLinearGradient(cx - 24, cy - 24, cx + 24, cy + 24);
+        gr.addColorStop(0, '#22e5ff');
+        gr.addColorStop(1, '#2f6bff');
+        g.shadowColor = '#22e5ff';
+        g.shadowBlur = 20;
+        g.fillStyle = gr;
+        g.beginPath();
+        g.arc(cx, cy, 20, 0, Math.PI * 2);
+        g.fill();
+        g.shadowBlur = 0;
+        return;
+      }
+      if (k.label === 'space') return;
+      const map = { back: '⌫', enter: '↵', shift: 'shift', caps: 'caps', '^v': '↕', '<': '←', '>': '→', win: '❖', del: 'del', esc: 'esc', tab: 'tab', ctrl: 'ctrl', alt: 'alt', fn: 'fn' };
+      const text = map[k.label] || k.label.toUpperCase();
+      g.font = `${text.length > 2 ? 34 : k.r === 0 ? 40 : 52}px "Geist Pixel", monospace`;
+      g.shadowColor = 'rgba(180,235,255,0.9)';
+      g.shadowBlur = 16;
+      g.fillStyle = '#eaf6ff';
+      g.fillText(text, cx, cy + 2);
+      g.shadowBlur = 0;
+    });
+    const tex = new THREE.CanvasTexture(cv);
+    if ('encoding' in tex) tex.encoding = THREE.sRGBEncoding;
+    tex.anisotropy = 4;
+    return tex;
+  }
+
+  function buildSurface(screenMat) {
+    const laptop = new THREE.Group();
+    const black = (c, m, r, extra) => new THREE.MeshStandardMaterial(Object.assign({ color: c, metalness: m, roughness: r }, extra));
+    const alu = black(0x17181d, 0.8, 0.36); // black anodised aluminium
+    const fabric = black(0x07080a, 0.05, 0.9); // soft-touch palm rest
+    const keyMat = black(0x08090c, 0.15, 0.4);
+    const plate = black(0x050608, 0.3, 0.6);
+    const glassDark = new THREE.MeshStandardMaterial({ color: 0x030407, metalness: 0.2, roughness: 0.08 });
+    const gold = black(0xe5c35a, 0.9, 0.3);
+    const silver = black(0x8a93a3, 0.9, 0.3);
+
+    /* ----- Flex Keyboard ----- */
+    const kb = new THREE.Group();
+    laptop.add(kb);
+    const deck = new THREE.Mesh(slab(KB.w, KB.d, KB.t, 0.12, 0.02), fabric);
+    deck.position.y = KB.t / 2;
+    kb.add(deck);
+
+    // key well (dark plate the keys sit in)
+    const kw = 15 * PITCH + 0.1;
+    const kd = 6 * PITCH + 0.1;
+    const keysZ0 = -KB.d / 2 + 0.44; // z of the top of the key block
+    const wellMesh = new THREE.Mesh(new THREE.BoxGeometry(kw, 0.012, kd), plate);
+    wellMesh.position.set(0, KB.t + 0.004, keysZ0 + (6 * PITCH) / 2);
+    kb.add(wellMesh);
+
+    const keys = keyLayout();
+    const keyGeo = new THREE.BoxGeometry(1, 0.045, 1);
+    const inst = new THREE.InstancedMesh(keyGeo, keyMat, keys.length);
+    const m4 = new THREE.Matrix4();
+    const sc = new THREE.Vector3();
+    const q = new THREE.Quaternion();
+    const pos = new THREE.Vector3();
+    keys.forEach((k, i) => {
+      pos.set(k.x, KB.t + 0.028, keysZ0 + (k.r + 0.5) * PITCH);
+      sc.set(k.w - 0.024, 1, PITCH - 0.024);
+      m4.compose(pos, q, sc);
+      inst.setMatrixAt(i, m4);
+    });
+    kb.add(inst);
+    // backlit legends
+    const legend = new THREE.Mesh(
+      new THREE.PlaneGeometry(15 * PITCH, 6 * PITCH),
+      new THREE.MeshBasicMaterial({ map: legendTexture(keys), transparent: true, toneMapped: false, depthWrite: false })
     );
-    pad.rotation.x = -Math.PI / 2;
-    pad.position.set(0, BASE_T + 0.003, 0.76);
-    laptop.add(pad);
+    legend.rotation.x = -Math.PI / 2;
+    legend.position.set(0, KB.t + 0.0515, keysZ0 + (6 * PITCH) / 2);
+    kb.add(legend);
 
-    // hinge pivot at back edge
+    // glass haptic touchpad
+    const padZ = keysZ0 + 6 * PITCH + 0.1 + 0.27;
+    const pad = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.008, 0.56), glassDark);
+    pad.position.set(0, KB.t + 0.004, padZ);
+    kb.add(pad);
+    const padEdge = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.57, 0.58),
+      new THREE.MeshBasicMaterial({ color: 0x22e5ff, transparent: true, opacity: 0.18, toneMapped: false })
+    );
+    padEdge.rotation.x = -Math.PI / 2;
+    padEdge.position.set(0, KB.t + 0.0015, padZ);
+    kb.add(padEdge);
+
+    // magnetic hinge strip along the back edge + gold contact pads
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(KB.w - 0.3, KB.t + 0.03, 0.15), alu);
+    strip.position.set(0, (KB.t + 0.03) / 2, -KB.d / 2 + 0.1);
+    kb.add(strip);
+    for (let i = 0; i < 6; i++) {
+      const p = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.012, 0.03), gold);
+      p.position.set((i - 2.5) * 0.09, KB.t + 0.034, -KB.d / 2 + 0.1);
+      kb.add(p);
+    }
+
+    // pen storage groove with a stylus held magnetically in it
+    const groove = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.02, 0.12), plate);
+    groove.position.set(0.1, KB.t + 0.006, -KB.d / 2 + 0.29);
+    kb.add(groove);
+    const pen = new THREE.Group();
+    const penBody = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.036, 2.0, 18), black(0x0c0d10, 0.6, 0.3));
+    penBody.rotation.z = Math.PI / 2;
+    pen.add(penBody);
+    const penTip = new THREE.Mesh(new THREE.ConeGeometry(0.036, 0.16, 18), silver);
+    penTip.rotation.z = Math.PI / 2;
+    penTip.position.x = 1.08;
+    pen.add(penTip);
+    const penBand = new THREE.Mesh(new THREE.CylinderGeometry(0.0375, 0.0375, 0.05, 18), silver);
+    penBand.rotation.z = Math.PI / 2;
+    penBand.position.x = -0.85;
+    pen.add(penBand);
+    const penLed = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.012, 0.012), new THREE.MeshBasicMaterial({ color: 0x22e5ff, toneMapped: false }));
+    penLed.position.set(-0.98, 0.037, 0);
+    pen.add(penLed);
+    pen.position.set(0.12, KB.t + 0.05, -KB.d / 2 + 0.29);
+    kb.add(pen);
+
+    /* ----- tablet (hinge pivot = tablet's bottom edge, sits on the keyboard's magnetic strip) ----- */
     const hinge = new THREE.Group();
     hinge.name = 'Lid';
-    hinge.position.set(0, BASE_T, -D / 2 + 0.05);
+    hinge.position.set(0, KB.t + 0.035, -KB.d / 2 + 0.1);
     laptop.add(hinge);
 
-    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, W * 0.6, 16), dark);
-    barrel.rotation.z = Math.PI / 2;
-    barrel.position.set(0, 0.02, 0);
-    hinge.add(barrel);
+    const tab = new THREE.Mesh(slab(TAB.w, TAB.d, TAB.t, 0.15, 0.022), alu);
+    tab.position.set(0, TAB.gap + TAB.t / 2, TAB.d / 2);
+    hinge.add(tab);
 
-    const lidD = D - 0.1;
-    const lid = new THREE.Mesh(slab(W, lidD, LID_T, 0.16, 0.025), shell);
-    lid.position.set(0, LID_GAP + LID_T / 2, lidD / 2);
-    hinge.add(lid);
-
-    // inner face (viewer looks at it from -y of the lid frame): bezel then screen, each a hair closer
-    const bezel = new THREE.Mesh(
-      new THREE.PlaneGeometry(W - 0.14, lidD - 0.14),
-      new THREE.MeshBasicMaterial({ color: 0x02040a, toneMapped: false })
-    );
-    bezel.rotation.x = Math.PI / 2;
-    bezel.position.set(0, LID_GAP - 0.002, lidD / 2);
-    hinge.add(bezel);
-
+    // inner (screen) face: glass, then the display. Planes face -y; each a hair closer to the viewer
+    const face = TAB.gap - 0.002;
+    const glass = new THREE.Mesh(new THREE.PlaneGeometry(TAB.w - 0.05, TAB.d - 0.05), glassDark);
+    glass.rotation.x = Math.PI / 2;
+    glass.position.set(0, face, TAB.d / 2);
+    hinge.add(glass);
+    const SCREEN_Z = TAB.d / 2;
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(SCREEN_W, SCREEN_H), screenMat);
     screen.name = 'Screen';
     screen.rotation.x = Math.PI / 2;
-    screen.position.set(0, LID_GAP - 0.005, lidD / 2 + 0.02);
+    screen.position.set(0, face - 0.004, SCREEN_Z);
     hinge.add(screen);
 
-    return { laptop, hinge };
-  }
+    // front camera + IR sensors in the top bezel (top = far end, +z)
+    const camZ = TAB.d - 0.09;
+    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.02, 20), new THREE.MeshBasicMaterial({ color: 0x0b1226, toneMapped: false }));
+    lens.rotation.x = Math.PI / 2;
+    lens.position.set(0, face - 0.006, camZ);
+    hinge.add(lens);
+    const lensRing = new THREE.Mesh(new THREE.RingGeometry(0.02, 0.028, 20), new THREE.MeshBasicMaterial({ color: 0x2a3350, toneMapped: false }));
+    lensRing.rotation.x = Math.PI / 2;
+    lensRing.position.set(0, face - 0.0065, camZ);
+    hinge.add(lensRing);
+    [-0.1, 0.1].forEach((dx, i) => {
+      const s = new THREE.Mesh(new THREE.CircleGeometry(i ? 0.01 : 0.008, 12), new THREE.MeshBasicMaterial({ color: i ? 0x22e5ff : 0x3a1218, toneMapped: false }));
+      s.rotation.x = Math.PI / 2;
+      s.position.set(dx, face - 0.006, camZ);
+      hinge.add(s);
+    });
 
+    // back (outer) face: rear camera + subtle recess where the kickstand sits
+    const backY = TAB.gap + TAB.t;
+    const camBase = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.012, 28), silver);
+    camBase.position.set(-TAB.w / 2 + 0.32, backY + 0.006, TAB.d - 0.3);
+    hinge.add(camBase);
+    const camLens = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.048, 0.014, 24), glassDark);
+    camLens.position.set(camBase.position.x, backY + 0.012, camBase.position.z);
+    hinge.add(camLens);
+    const camDot = new THREE.Mesh(new THREE.CircleGeometry(0.012, 12), new THREE.MeshBasicMaterial({ color: 0x2f6bff, toneMapped: false }));
+    camDot.rotation.x = -Math.PI / 2;
+    camDot.position.set(camBase.position.x + 0.015, backY + 0.0195, camBase.position.z - 0.01);
+    hinge.add(camDot);
+
+    // kickstand: its own pivot (hinge line across the back), swings out to rest on the surface
+    const standPivot = new THREE.Group();
+    standPivot.position.set(0, backY, STAND.hingeFromBottom);
+    hinge.add(standPivot);
+    const standMesh = new THREE.Mesh(slab(TAB.w - 0.2, STAND.len, STAND.t, 0.08, 0.01), alu);
+    standMesh.position.set(0, STAND.t / 2 + 0.004, -STAND.len / 2);
+    standPivot.add(standMesh);
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, TAB.w - 0.55, 16), black(0x0e0f12, 0.85, 0.3));
+    barrel.rotation.z = Math.PI / 2;
+    barrel.position.set(0, 0.022, 0);
+    standPivot.add(barrel);
+    [-1, 1].forEach((s) => {
+      const hb = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.09), silver);
+      hb.position.set(s * (TAB.w / 2 - 0.35), 0.014, 0.0);
+      standPivot.add(hb);
+      const foot = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.034, 0.03), black(0x050507, 0, 0.9));
+      foot.position.set(s * 0.6, STAND.t / 2 + 0.004, -STAND.len + 0.03);
+      standPivot.add(foot);
+    });
+
+    // edges: USB-C x2 + magnetic connector on the right side, power + volume on the top edge
+    const portMat = new THREE.MeshBasicMaterial({ color: 0x000000, toneMapped: false });
+    [0.95, 1.2].forEach((z) => {
+      const rim = new THREE.Mesh(new THREE.PlaneGeometry(0.17, TAB.t * 0.55), silver);
+      rim.rotation.y = Math.PI / 2;
+      rim.position.set(TAB.w / 2 + 0.0015, TAB.gap + TAB.t / 2, z);
+      hinge.add(rim);
+      const hole = new THREE.Mesh(new THREE.PlaneGeometry(0.14, TAB.t * 0.38), portMat);
+      hole.rotation.y = Math.PI / 2;
+      hole.position.set(TAB.w / 2 + 0.002, TAB.gap + TAB.t / 2, z);
+      hinge.add(hole);
+    });
+    const sc2 = new THREE.Mesh(new THREE.PlaneGeometry(0.3, TAB.t * 0.5), silver);
+    sc2.rotation.y = Math.PI / 2;
+    sc2.position.set(TAB.w / 2 + 0.0015, TAB.gap + TAB.t / 2, 1.65);
+    hinge.add(sc2);
+    const sc2h = new THREE.Mesh(new THREE.PlaneGeometry(0.26, TAB.t * 0.3), portMat);
+    sc2h.rotation.y = Math.PI / 2;
+    sc2h.position.set(TAB.w / 2 + 0.002, TAB.gap + TAB.t / 2, 1.65);
+    hinge.add(sc2h);
+    const power = new THREE.Mesh(new THREE.BoxGeometry(0.24, TAB.t * 0.5, 0.025), silver);
+    power.position.set(TAB.w / 2 - 0.55, TAB.gap + TAB.t / 2, TAB.d + 0.004);
+    hinge.add(power);
+    [-0.35, -0.15].forEach((x) => {
+      const v = new THREE.Mesh(new THREE.BoxGeometry(0.14, TAB.t * 0.45, 0.02), silver);
+      v.position.set(-TAB.w / 2 + 0.95 + x + 0.35, TAB.gap + TAB.t / 2, TAB.d + 0.003);
+      hinge.add(v);
+    });
+    // 6 gold magnetic-connector pads on the tablet's bottom edge
+    for (let i = 0; i < 6; i++) {
+      const p = new THREE.Mesh(new THREE.BoxGeometry(0.05, TAB.t * 0.35, 0.012), gold);
+      p.position.set((i - 2.5) * 0.09, TAB.gap + TAB.t / 2, -0.002);
+      hinge.add(p);
+    }
+
+    // kickstand angle that always lands the stand on the surface for any tablet angle A
+    const y0 = KB.t + 0.035; // hinge height above the surface
+    function setOpen(A) {
+      const p1y = y0 + backY * Math.cos(A) + STAND.hingeFromBottom * Math.sin(A);
+      const phi = A - Math.asin(clamp(p1y / STAND.len, -1, 1));
+      standPivot.rotation.x = clamp(phi, 0, 1.3);
+    }
+
+    return { laptop, hinge, setOpen };
+  }
 
   /* ---------- ESP32 dev board ---------- */
 
@@ -498,7 +694,7 @@
     const screenMat = new THREE.MeshBasicMaterial({ map: terminal.texture, toneMapped: false });
     screenMat.color.setScalar(0);
 
-    let model = buildLaptop(screenMat);
+    let model = buildSurface(screenMat);
     model.laptop.position.set(0, -0.95, 0.2);
     floatGroup.add(model.laptop);
 
@@ -734,6 +930,7 @@
       if (!reduced) state.open = easeOutCubic(clamp((since - 0.5) / 1.8, 0, 1));
       const hinge = model.hinge;
       if (hinge) hinge.rotation.x = -OPEN_ANGLE * state.open;
+      if (model.setOpen) model.setOpen(OPEN_ANGLE * state.open);
       screenMat.color.setScalar(smoothstep(0.3, 0.85, state.open));
 
       // scroll-driven root transform (damped)
