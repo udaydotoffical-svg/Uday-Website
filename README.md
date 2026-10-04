@@ -67,6 +67,10 @@ Everything is in `js/content.js`. To **add a project**, copy one object inside `
 | 3D laptop model | `glbUrl` line in `js/main.js` (commented) | See below. |
 | Formspree (optional) | `contact.formspreeId` in `js/content.js` | Empty = the form opens the visitor's email app (mailto). |
 
+## The ESP32 next to the laptop
+
+`buildESP32()` in `js/laptop.js` is a procedural dev board (shield with "ESP32 WROOM-32" label, antenna, 2x19 gold pins, micro-USB, EN/BOOT buttons, USB-UART chip). The cyan status LED blinks at 1 Hz and lights the board, a red power LED stays on, Wi-Fi arcs radiate from the antenna and little data packets fly toward the laptop. It sits beside the laptop on wide screens and in front of it on phones. To remove it, delete the `buildESP32()` / `espWrap` lines in `js/laptop.js`.
+
 ## Swap in your own laptop model (.glb)
 
 Put the file in `models/laptop.glb`, then uncomment `glbUrl: 'models/laptop.glb'` in `js/main.js`.

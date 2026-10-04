@@ -272,6 +272,176 @@
     return { laptop, hinge };
   }
 
+
+  /* ---------- ESP32 dev board ---------- */
+
+  function labelTexture(lines, w, h, color) {
+    const cv = document.createElement('canvas');
+    cv.width = w;
+    cv.height = h;
+    const g = cv.getContext('2d');
+    g.fillStyle = color || '#eaf6ff';
+    g.textBaseline = 'middle';
+    g.textAlign = 'center';
+    lines.forEach((l, i) => {
+      g.font = `${l.size}px "Geist Pixel", monospace`;
+      g.fillText(l.t, w / 2, l.y);
+    });
+    const tex = new THREE.CanvasTexture(cv);
+    if ('encoding' in tex) tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  // ~1.8:1 like a real ESP32-DevKitC (51 x 28 mm). 1 unit = ~2 cm.
+  function buildESP32() {
+    const g = new THREE.Group();
+    const BW = 2.5;
+    const BD = 1.4;
+    const BT = 0.07;
+
+    const pcb = new THREE.MeshStandardMaterial({ color: 0x14306e, metalness: 0.25, roughness: 0.5, emissive: 0x0a1a45, emissiveIntensity: 0.6 });
+    const metal = new THREE.MeshStandardMaterial({ color: 0xb9c6dc, metalness: 0.9, roughness: 0.28 });
+    const gold = new THREE.MeshStandardMaterial({ color: 0xe5c35a, metalness: 0.85, roughness: 0.3 });
+    const black = new THREE.MeshStandardMaterial({ color: 0x05070f, metalness: 0.2, roughness: 0.5 });
+
+    const board = new THREE.Mesh(slab(BW, BD, BT, 0.06, 0.012), pcb);
+    board.position.y = BT / 2;
+    g.add(board);
+
+    // glowing traces on the board (flat strips)
+    const traceMat = new THREE.MeshBasicMaterial({ color: 0x22e5ff, transparent: true, opacity: 0.6, toneMapped: false });
+    [[-0.2, 0.18, 0.9], [0.1, -0.12, 0.7], [0.5, 0.3, 0.5]].forEach(([x, z, len], i) => {
+      const t = new THREE.Mesh(new THREE.PlaneGeometry(len, 0.012), traceMat);
+      t.rotation.x = -Math.PI / 2;
+      t.position.set(x, BT + 0.002, z);
+      g.add(t);
+      const t2 = new THREE.Mesh(new THREE.PlaneGeometry(0.012, 0.25 + i * 0.1), traceMat);
+      t2.rotation.x = -Math.PI / 2;
+      t2.position.set(x + len / 2, BT + 0.002, z + 0.12);
+      g.add(t2);
+    });
+
+    // WROOM module: silver shield + PCB antenna keep-out
+    const shield = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.09, 0.9), metal);
+    shield.position.set(-BW / 2 + 0.62, BT + 0.045, 0);
+    g.add(shield);
+    const label = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.85, 0.5),
+      new THREE.MeshBasicMaterial({
+        map: labelTexture(
+          [
+            { t: 'ESP32', size: 82, y: 70 },
+            { t: 'WROOM-32', size: 40, y: 150 },
+          ],
+          256,
+          200,
+          '#0a1226'
+        ),
+        transparent: true,
+        toneMapped: false,
+      })
+    );
+    label.rotation.x = -Math.PI / 2;
+    label.position.set(shield.position.x, BT + 0.092, 0.02);
+    g.add(label);
+    // meander antenna
+    const ant = new THREE.MeshBasicMaterial({ color: 0xe5c35a, toneMapped: false });
+    const ax = -BW / 2 + 0.1;
+    for (let i = 0; i < 5; i++) {
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.012, 0.3), ant);
+      bar.position.set(ax + i * 0.045 - 0.0, BT + 0.007, i % 2 ? -0.12 : 0.12);
+      g.add(bar);
+    }
+    const antBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.012, 0.02), ant);
+    antBase.position.set(ax + 0.09, BT + 0.007, 0.27);
+    g.add(antBase);
+
+    // pin headers: 19 per side
+    const pinGeo = new THREE.BoxGeometry(0.05, 0.16, 0.05);
+    const base = new THREE.BoxGeometry(2.0, 0.09, 0.1);
+    const pins = new THREE.InstancedMesh(pinGeo, gold, 38);
+    const m = new THREE.Matrix4();
+    let n = 0;
+    [-1, 1].forEach((side) => {
+      const strip = new THREE.Mesh(base, black);
+      strip.position.set(0.1, BT + 0.045, side * (BD / 2 - 0.1));
+      g.add(strip);
+      for (let i = 0; i < 19; i++) {
+        m.setPosition(0.1 + (i - 9) * 0.105, BT + 0.1, side * (BD / 2 - 0.1));
+        pins.setMatrixAt(n++, m);
+      }
+    });
+    g.add(pins);
+
+    // micro-USB at the far end + USB-UART chip + 2 tact buttons
+    const usb = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.14, 0.28), metal);
+    usb.position.set(BW / 2 - 0.12, BT + 0.07, 0);
+    g.add(usb);
+    const usbHole = new THREE.Mesh(new THREE.PlaneGeometry(0.02, 0.2), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+    usbHole.rotation.y = Math.PI / 2;
+    usbHole.position.set(BW / 2 + 0.051, BT + 0.07, 0);
+    g.add(usbHole);
+    const chip = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.04, 0.2), black);
+    chip.position.set(BW / 2 - 0.55, BT + 0.02, 0.0);
+    g.add(chip);
+    [-0.32, 0.32].forEach((z, i) => {
+      const btn = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.07, 0.2), metal);
+      btn.position.set(BW / 2 - 0.4, BT + 0.035, z);
+      g.add(btn);
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.05, 12), new THREE.MeshStandardMaterial({ color: i ? 0x2f6bff : 0xeaf6ff, roughness: 0.5 }));
+      cap.position.set(btn.position.x, BT + 0.09, z);
+      g.add(cap);
+    });
+
+    // LEDs: steady power LED + blinking status LED (GPIO2 style)
+    const ledGeo = new THREE.BoxGeometry(0.08, 0.04, 0.05);
+    const powerMat = new THREE.MeshBasicMaterial({ color: 0xff4a5a, toneMapped: false });
+    const power = new THREE.Mesh(ledGeo, powerMat);
+    power.position.set(BW / 2 - 0.9, BT + 0.02, -0.36);
+    g.add(power);
+    const ledMat = new THREE.MeshBasicMaterial({ color: 0x22e5ff, toneMapped: false });
+    const led = new THREE.Mesh(ledGeo, ledMat);
+    led.position.set(BW / 2 - 0.9, BT + 0.02, 0.36);
+    g.add(led);
+    const halo = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.9, 0.9),
+      new THREE.MeshBasicMaterial({ map: glowTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false })
+    );
+    halo.rotation.x = -Math.PI / 2;
+    halo.position.set(led.position.x, BT + 0.06, led.position.z);
+    g.add(halo);
+    const ledLight = new THREE.PointLight(CYAN, 1.2, 2.6, 2);
+    ledLight.position.set(led.position.x, 0.35, led.position.z);
+    g.add(ledLight);
+
+    // data pulses flying from the antenna toward the laptop (+x is toward the laptop once the board is turned)
+    const pulses = [];
+    const pulseGeo = new THREE.BoxGeometry(0.07, 0.07, 0.07);
+    for (let i = 0; i < 7; i++) {
+      const mat = new THREE.MeshBasicMaterial({ color: i % 2 ? 0x22e5ff : 0xeaf6ff, transparent: true, toneMapped: false });
+      const p = new THREE.Mesh(pulseGeo, mat);
+      p.visible = false;
+      g.add(p);
+      pulses.push(p);
+    }
+
+    // "WIFI" ring arcs from the antenna
+    const rings = [];
+    for (let i = 0; i < 3; i++) {
+      const r = new THREE.Mesh(
+        new THREE.RingGeometry(0.28, 0.31, 28, 1, -0.8, 1.6),
+        new THREE.MeshBasicMaterial({ color: 0x22e5ff, transparent: true, side: THREE.DoubleSide, depthWrite: false, toneMapped: false })
+      );
+      r.rotation.x = -Math.PI / 2;
+      r.position.set(-BW / 2 - 0.05, BT + 0.25, 0);
+      r.rotation.z = Math.PI; // open toward -x (outward from antenna)
+      g.add(r);
+      rings.push(r);
+    }
+
+    return { group: g, ledMat, led, halo, ledLight, powerMat, pulses, rings, dims: { BW, BD, BT } };
+  }
+
   /* ---------- scene ---------- */
 
   function init(opts) {
@@ -329,6 +499,23 @@
     let model = buildLaptop(screenMat);
     model.laptop.position.set(0, -0.95, 0.2);
     floatGroup.add(model.laptop);
+
+    // ESP32 dev board standing next to the laptop (front-left), with its own float
+    const esp = buildESP32();
+    const espWrap = new THREE.Group();
+    espWrap.add(esp.group);
+    esp.group.rotation.set(0, 0, 0);
+    esp.group.scale.setScalar(0.85);
+    espWrap.rotation.set(0.28, 0.55, -0.12);
+    floatGroup.add(espWrap);
+    let espBase = { x: -2.7, y: -0.55, z: 1.5 };
+    // wide screens: beside the laptop. Portrait screens: in front of it, so nothing is clipped.
+    function placeEsp() {
+      const portrait = aspect < 1;
+      espBase = portrait ? { x: 0.2, y: -0.8, z: 1.35 } : { x: -2.7, y: -0.55, z: 1.5 };
+      esp.group.scale.setScalar(portrait ? 0.55 : 0.85);
+      espWrap.position.set(espBase.x, espBase.y, espBase.z);
+    }
 
     // glow pool under the laptop
     const glow = new THREE.Mesh(
@@ -397,11 +584,11 @@
       let a;
       let b;
       if (desktop) {
-        s0 = Math.min(v.h * 0.55 / 2.5, (v.w * 0.42) / (W + 0.1));
+        s0 = Math.min(v.h * 0.55 / 2.5, (v.w * 0.46) / (W + 1.7));
         a = { x: v.w * 0.2, y: 0, s: s0 };
         b = { x: v.w * 0.3, y: v.h * 0.12, s: s0 * 0.58 };
       } else {
-        s0 = Math.min(v.h * 0.3 / 2.5, (v.w * 0.74) / (W + 0.1));
+        s0 = Math.min(v.h * 0.3 / 2.5, (v.w * 0.8) / (W + 0.6));
         a = { x: 0, y: v.h * 0.2, s: s0 };
         b = { x: v.w * 0.24, y: v.h * 0.36, s: s0 * 0.5 };
       }
@@ -424,6 +611,7 @@
       renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 2));
       renderer.setSize(w, h, false);
       aspect = w / h;
+      placeEsp();
       camera.aspect = aspect;
       camera.updateProjectionMatrix();
       const maxAniso = renderer.capabilities.getMaxAnisotropy();
@@ -476,6 +664,42 @@
       particles.position.y = Math.sin(t * 0.2) * 0.15;
 
       terminal.draw(t, reduced, false);
+
+      // ESP32: hover, blinking status LED, data pulses to the laptop, wifi rings
+      espWrap.position.y = espBase.y + (reduced ? 0 : Math.sin(t * 1.3 + 1.2) * 0.09);
+      const on = reduced ? true : Math.floor(t * 2) % 2 === 0; // 1 Hz blink
+      const k2 = on ? 1 : 0.08;
+      esp.ledMat.color.setRGB(0.13 * k2 + 0.02, 0.9 * k2 + 0.05, 1 * k2 + 0.05);
+      esp.halo.material.opacity = on ? 0.95 : 0.0;
+      esp.halo.visible = on;
+      esp.ledLight.intensity = on ? 1.4 : 0;
+      esp.powerMat.color.setRGB(1, 0.29 + (reduced ? 0 : Math.sin(t * 3) * 0.02), 0.35);
+      if (!reduced) {
+        // pulses travel along an arc from the board's antenna end to the laptop (local to esp.group -> target is +x, up, back)
+        esp.pulses.forEach((p, i) => {
+          const u = (((t * 0.45 + i / esp.pulses.length) % 1) + 1) % 1;
+          // bezier: start at antenna (-1.25,0.2,0), control up high, end near laptop left edge
+          const sx = -1.25, sy = 0.25, sz = 0;
+          const ex = 6.0, ey = 1.2, ez = -3.0;
+          const cx = 1.0, cy = 3.2, cz = -1.0;
+          const a = (1 - u) * (1 - u), b = 2 * (1 - u) * u, d = u * u;
+          p.position.set(a * sx + b * cx + d * ex, a * sy + b * cy + d * ey, a * sz + b * cz + d * ez);
+          p.visible = true;
+          p.material.opacity = Math.sin(u * Math.PI);
+          p.rotation.set(t * 2 + i, t * 3 + i, 0);
+        });
+        esp.rings.forEach((r, i) => {
+          const u = (t * 0.7 + i / 3) % 1;
+          r.scale.setScalar(0.4 + u * 2.4);
+          r.material.opacity = (1 - u) * 0.7;
+        });
+      } else {
+        esp.pulses.forEach((p) => (p.visible = false));
+        esp.rings.forEach((r, i) => {
+          r.scale.setScalar(0.5 + i * 0.9);
+          r.material.opacity = 0.6 - i * 0.18;
+        });
+      }
     }
 
     function frame(now) {
