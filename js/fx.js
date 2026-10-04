@@ -271,6 +271,19 @@
       );
     }
 
+    // ocean follows the mouse a touch (deeper than the hero tags)
+    const ocean = $('#ocean');
+    if (ocean) {
+      window.addEventListener(
+        'pointermove',
+        (e) => {
+          ocean.style.setProperty('--ox', ((e.clientX / window.innerWidth - 0.5) * -26).toFixed(1));
+          ocean.style.setProperty('--oy', ((e.clientY / window.innerHeight - 0.5) * -16).toFixed(1));
+        },
+        { passive: true }
+      );
+    }
+
     // nav links scramble on hover
     $$('.nav-links a').forEach((a) => {
       const t = a.textContent;
@@ -281,6 +294,7 @@
   /* ---------- scroll engine (one rAF per frame, only when scrolling) ---------- */
 
   const nav = $('.nav');
+  const oceanEl = $('#ocean');
   const tagU = $('.tag-uday');
   const tagS = $('.tag-singh');
   const stars = $$('.star');
@@ -296,6 +310,7 @@
     lastY = y;
     vel = clamp(vel + dy, -400, 400);
 
+    if (oceanEl) oceanEl.style.setProperty('--sy', Math.min(y, 900).toFixed(0)); // capped so the photo never slides off its edge
     const max = document.documentElement.scrollHeight - vh;
     progress.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
 

@@ -24,6 +24,7 @@
   <!-- design system first, then site styles -->
   <link rel="stylesheet" href="styles/knowura.css">
   <link rel="stylesheet" href="styles/site.css">
+  <link rel="preload" as="image" href="assets/ocean-bg.jpg" fetchpriority="low">
   <link rel="stylesheet" href="styles/fx.css">
   <script>
     // boot loader once per session (skipped for reduced motion); failsafes if JS below never runs
@@ -37,6 +38,8 @@
   </script>
 </head>
 <body>
+  <div class="ocean" id="ocean" aria-hidden="true"><i></i><i></i></div>
+
   <div class="loader" id="loader" aria-hidden="true">
     <ul class="loader-log">
       <li>booting uday.os</li>

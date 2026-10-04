@@ -179,3 +179,26 @@ html.js:not(.is-intro) .hero-copy > .eyebrow { clip-path: inset(0 100% 0 0); }
 /* inside a live Knowura frame the real cursor takes over (the page can't see the mouse over an iframe) */
 .has-cursor:has(.browser.is-live) :is(.cursor-dot, .cursor-ring) { opacity: 0 !important; }
 .has-cursor .browser.is-live, .has-cursor .browser.is-live * { cursor: auto; }
+
+/* ---------- ocean background ---------- */
+.ocean { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; background: var(--dark); }
+.ocean i {
+  position: absolute; inset: -8%;
+  background: url('../assets/ocean-bg.jpg') center / cover no-repeat;
+  will-change: transform;
+  translate: calc(var(--ox, 0) * 1px) calc(var(--oy, 0) * 1px + var(--sy, 0) * -0.06px);
+}
+.ocean i:first-child { opacity: 0.8; animation: swellA 38s ease-in-out infinite alternate; }
+/* second copy drifts the other way and is screen-blended: ripples cross each other like moving water */
+.ocean i:last-child { opacity: 0.22; transform: scaleX(-1) scale(1.06); animation: swellB 52s ease-in-out infinite alternate; }
+@keyframes swellA { from { transform: scale(1.04) translate3d(-2.5%, 1%, 0) rotate(0deg); } to { transform: scale(1.16) translate3d(2.5%, -2%, 0) rotate(0.8deg); } }
+@keyframes swellB { from { transform: scaleX(-1) scale(1.1) translate3d(3%, -1.5%, 0); } to { transform: scaleX(-1) scale(1.02) translate3d(-3%, 2%, 0); } }
+/* soft cyan light glint that slides across the water */
+.ocean::after { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, var(--cyan) 10%, transparent) 50%, transparent 65%); background-size: 250% 100%; animation: glint 14s linear infinite; }
+@keyframes glint { from { background-position: 130% 0; } to { background-position: -130% 0; } }
+/* phones / touch: one layer, no glint, so it stays smooth on weaker GPUs */
+@media (max-width: 860px), (pointer: coarse) { .ocean i:last-child, .ocean::after { display: none; } }
+@media (prefers-reduced-motion: reduce) { .ocean i, .ocean::after { animation: none; } }
+
+/* readability over the water */
+.hero .tagline, .eyebrow, .section-title, .about-card p { text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75); }
