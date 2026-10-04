@@ -141,8 +141,8 @@ and remove any `X-Frame-Options` header from that file, from `next.config.js` `h
 - **Kinetic marquees**: words come from `marquee` in `js/content.js`; scrolling speeds them up and flips direction.
 - **Scroll**: progress bar, nav hides on scroll down, name tags drift apart, section titles decode, timeline line draws itself, quotes light up word by word.
 - **Mega footer**: giant "LET'S BUILD" email link with a hover wave.
-- **Ocean background** (`assets/ocean-bg.jpg`, `.ocean` in `styles/fx.css`): your water photo sits under a deep-blue veil, drifts slowly, follows the mouse, moves slightly with scroll, and has a cyan light glint sliding across. A second, mirrored copy ripples against it on desktop (turned off on phones for smoothness). Swap the photo by replacing the file; tune the darkness in the `body::after` veil in `styles/site.css`.
-- Film grain overlay. Everything heavy switches off under `prefers-reduced-motion`.
+- **Ocean background** (`assets/ocean-bg.jpg`, 1400px / ~100 KB, `.ocean` in `styles/fx.css`): your water photo under a deep-blue veil. It drifts slowly only while you are at the top of the page and freezes once you scroll, because the glass panels blur whatever is behind them every frame and a moving background made the whole page lag (measured: ~2x slower per frame). No mouse/scroll parallax, one layer, off on phones and for reduced motion. Swap the photo by replacing the file (keep it under ~150 KB); tune the darkness in the `body::after` veil in `styles/site.css`.
+- Static film grain overlay. Everything heavy switches off under `prefers-reduced-motion`.
 
 ## Command palette
 

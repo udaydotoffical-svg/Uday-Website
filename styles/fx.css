@@ -58,7 +58,6 @@ html.js:not(.is-intro) .hero-copy > .eyebrow { clip-path: inset(0 100% 0 0); }
 .grain {
   position: fixed; inset: -50%; z-index: 80; pointer-events: none; opacity: 0.07;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: grain 0.9s steps(6) infinite;
 }
 @keyframes grain {
   0% { transform: translate(0, 0); } 20% { transform: translate(-6%, 4%); } 40% { transform: translate(5%, -7%); }
@@ -164,7 +163,7 @@ html.js:not(.is-intro) .hero-copy > .eyebrow { clip-path: inset(0 100% 0 0); }
 
 /* ---------- reduced motion: keep it calm ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .grain, .mega-star, .mq-track { animation: none; }
+  .mega-star, .mq-track { animation: none; }
   .quote p .w { opacity: 1; }
   .js-reveal .project.reveal { clip-path: none; translate: 0 0; }
   .nav, .name-stack { transition: none; }
@@ -181,24 +180,20 @@ html.js:not(.is-intro) .hero-copy > .eyebrow { clip-path: inset(0 100% 0 0); }
 .has-cursor .browser.is-live, .has-cursor .browser.is-live * { cursor: auto; }
 
 /* ---------- ocean background ---------- */
-.ocean { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; background: var(--dark); }
+/* Performance: the glass panels blur whatever is behind them every frame, so a moving background makes the
+   whole page lag. The water therefore drifts only while you are at the top of the page and freezes once you
+   scroll (.is-scrolled, set in fx.js). One layer, compositor-only transform, no parallax, no blend modes. */
+.ocean { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; background: var(--dark); contain: strict; }
 .ocean i {
-  position: absolute; inset: -8%;
+  position: absolute; inset: -4%;
   background: url('../assets/ocean-bg.jpg') center / cover no-repeat;
   will-change: transform;
-  translate: calc(var(--ox, 0) * 1px) calc(var(--oy, 0) * 1px + var(--sy, 0) * -0.06px);
+  animation: swell 40s ease-in-out infinite alternate;
 }
-.ocean i:first-child { opacity: 0.8; animation: swellA 38s ease-in-out infinite alternate; }
-/* second copy drifts the other way and is screen-blended: ripples cross each other like moving water */
-.ocean i:last-child { opacity: 0.22; transform: scaleX(-1) scale(1.06); animation: swellB 52s ease-in-out infinite alternate; }
-@keyframes swellA { from { transform: scale(1.04) translate3d(-2.5%, 1%, 0) rotate(0deg); } to { transform: scale(1.16) translate3d(2.5%, -2%, 0) rotate(0.8deg); } }
-@keyframes swellB { from { transform: scaleX(-1) scale(1.1) translate3d(3%, -1.5%, 0); } to { transform: scaleX(-1) scale(1.02) translate3d(-3%, 2%, 0); } }
-/* soft cyan light glint that slides across the water */
-.ocean::after { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, var(--cyan) 10%, transparent) 50%, transparent 65%); background-size: 250% 100%; animation: glint 14s linear infinite; }
-@keyframes glint { from { background-position: 130% 0; } to { background-position: -130% 0; } }
-/* phones / touch: one layer, no glint, so it stays smooth on weaker GPUs */
-@media (max-width: 860px), (pointer: coarse) { .ocean i:last-child, .ocean::after { display: none; } }
-@media (prefers-reduced-motion: reduce) { .ocean i, .ocean::after { animation: none; } }
+@keyframes swell { from { transform: scale(1.02) translate3d(-2%, 0.5%, 0); } to { transform: scale(1.1) translate3d(2%, -1.5%, 0); } }
+.is-scrolled .ocean i { animation-play-state: paused; will-change: auto; }
+@media (max-width: 860px), (pointer: coarse) { .ocean i { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .ocean i { animation: none; } }
 
 /* readability over the water */
 .hero .tagline, .eyebrow, .section-title, .about-card p { text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75); }

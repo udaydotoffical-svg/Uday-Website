@@ -869,6 +869,7 @@
       mx: 0, my: 0, // raw pointer
     };
     let aspect = 1;
+    let quality = 1; // render-resolution multiplier, lowered automatically on slow devices
     let visible = true;
     let raf = 0;
     let last = 0;
@@ -912,7 +913,7 @@
       const parent = canvas.parentElement || canvas;
       const w = Math.max(1, parent.clientWidth);
       const h = Math.max(1, parent.clientHeight);
-      renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 2));
+      renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 2) * quality);
       renderer.setSize(w, h, false);
       aspect = w / h;
       placeEsp();
@@ -1007,10 +1008,25 @@
       }
     }
 
+    // adaptive quality: if frames stay slow (weak GPU / phone), step the render resolution down
+    let slowFrames = 0;
+    let fastFrames = 0;
+    function adapt(rawDt) {
+      if (rawDt > 0.034) { slowFrames++; fastFrames = 0; } else { fastFrames++; slowFrames = Math.max(0, slowFrames - 1); }
+      if (slowFrames > 45 && quality > 0.5) {
+        quality = quality > 0.75 ? 0.75 : 0.5;
+        slowFrames = 0;
+        renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 2) * quality);
+        renderer.setSize(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight, false);
+      }
+    }
+
     function frame(now) {
       raf = global.requestAnimationFrame(frame);
       const t = now / 1000;
-      const dt = Math.min(0.05, Math.max(0.001, t - last));
+      const rawDt = t - last;
+      const dt = Math.min(0.05, Math.max(0.001, rawDt));
+      if (rawDt < 0.5) adapt(rawDt); // ignore the gap after a tab switch
       last = t;
       update(t, dt);
       renderer.render(scene, camera);
