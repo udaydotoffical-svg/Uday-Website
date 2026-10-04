@@ -10,6 +10,18 @@
   <link rel="stylesheet" href="styles/site.css">
 </head>
 <body>
+  <!-- big name sits UNDER the 3D canvas so the laptop floats in front of it -->
+  <div class="name-bg">
+    <h1 class="name-stack" aria-label="Uday Singh">
+      <span class="tag tag-uday" aria-hidden="true">UDAY</span>
+      <span class="tag tag-singh" aria-hidden="true">SINGH</span>
+      <span class="chip" aria-hidden="true"><i class="px-plus"></i></span>
+      <i class="px-star s1" aria-hidden="true"></i>
+      <i class="px-star s2" aria-hidden="true"></i>
+      <i class="px-star s3" aria-hidden="true"></i>
+    </h1>
+  </div>
+
   <!-- fixed 3D stage sits behind all content -->
   <div class="laptop-stage" id="stage" aria-hidden="true">
     <canvas id="laptop-canvas"></canvas>
@@ -24,7 +36,6 @@
     <section class="hero" id="hero">
       <div class="hero-copy">
         <p class="eyebrow glass-light">Vadodara, India</p>
-        <h1>Uday Singh</h1>
         <p class="tagline">I build hardware that talks to software</p>
         <div class="actions">
           <a class="btn" href="https://github.com/udaydotoffical-svg" target="_blank" rel="noopener">GitHub</a>
