@@ -74,7 +74,7 @@ Trigger it any of these ways (nothing on the page advertises it):
 - type `arch`, `btw` or `fastfetch` anywhere (outside a text box)
 - open the `/` command palette and run `fastfetch`
 
-The screen types `$ fastfetch`, prints the Arch logo and system info (`OS: Arch Linux arm64`, `Host: Microsoft Surface Pro 11`, `Arch: arm64` ...), then the characters scramble and morph into a big ASCII "I USE ARCH BTW", glows for a few seconds and goes back to the normal terminal. With reduced motion it just shows the finished banner for 6 seconds. All of it lives in `createTerminal()` in `js/laptop.js` (look for `ARCH_LOGO`, `FETCH_INFO`, `EGG_T` timings).
+The screen types `$ fastfetch`, prints the Arch logo and system info (a full Surface Pro 11 on Arch Linux ARM readout: `OS`, `Host`, `Kernel`, `Packages`, `Display 2880x1920 @ 120 Hz`, `CPU Snapdragon X Plus`, ... edit `FETCH_INFO`), then the characters scramble and morph into a big ASCII "I USE ARCH BTW", glows for a few seconds and goes back to the normal terminal. With reduced motion it just shows the finished banner for 6 seconds. All of it lives in `createTerminal()` in `js/laptop.js` (look for `ARCH_LOGO`, `FETCH_INFO`, `EGG_T` timings).
 
 ## Boot loader and 3D
 

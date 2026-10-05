@@ -113,14 +113,24 @@
     '`++:.                           `-/+/',
     '.`                                 `/',
   ];
+  // Placeholder readout for a Surface Pro 11 running Arch Linux ARM. Edit freely: the display (13" 2880x1920 @ 120 Hz)
+  // and chip family (Snapdragon X, 10-core X Plus) match the device; kernel, uptime, packages, DE and memory used are
+  // just plausible values.
   const FETCH_INFO = [
     { k: '', v: 'uday@arch', c: '#22e5ff' },
     { k: '', v: '---------', c: '#8fa6cc' },
-    { k: 'OS', v: 'Arch Linux arm64' },
+    { k: 'OS', v: 'Arch Linux ARM aarch64' },
     { k: 'Host', v: 'Microsoft Surface Pro 11' },
-    { k: 'Arch', v: 'arm64' },
-    { k: 'Display', v: '13" 3:2 touch' },
-    { k: 'Terminal', v: 'your browser' },
+    { k: 'Kernel', v: 'Linux 6.18.2-arch1' },
+    { k: 'Uptime', v: '3 hours, 14 mins' },
+    { k: 'Packages', v: '842 (pacman)' },
+    { k: 'Shell', v: 'zsh 5.9' },
+    { k: 'Display', v: '2880x1920 @ 120 Hz' },
+    { k: 'DE', v: 'KDE Plasma 6.5' },
+    { k: 'Terminal', v: 'kitty' },
+    { k: 'CPU', v: 'Snapdragon X Plus (10)' },
+    { k: 'GPU', v: 'Qualcomm Adreno X1' },
+    { k: 'Memory', v: '4.1 GiB / 15.6 GiB' },
     { k: 'Motto', v: 'I use arch btw' },
   ];
   const FONT5X7 = {
