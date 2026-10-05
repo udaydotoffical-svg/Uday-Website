@@ -90,6 +90,80 @@
   const TYPE_CPS = 34;
   const TYPE_LOOP = TERM_TOTAL / TYPE_CPS + 5;
 
+  /* ---------- fastfetch easter egg data ---------- */
+
+  const ARCH_LOGO = [
+    '                  -`',
+    '                 .o+`',
+    '                `ooo/',
+    '               `+oooo:',
+    '              `+oooooo:',
+    '              -+oooooo+:',
+    '            `/:-:++oooo+:',
+    '           `/++++/+++++++:',
+    '          `/++++++++++++++:',
+    '         `/+++ooooooooooooo/`',
+    '        ./ooosssso++osssssso+`',
+    '       .oossssso-````/ossssss+`',
+    '      -osssssso.      :ssssssso.',
+    '     :osssssss/        osssso+++.',
+    '    /ossssssss/        +ssssooo/-',
+    '  `/ossssso+/:-        -:/+osssso+-',
+    ' `+sso+:-`                 `.-/+oso:',
+    '`++:.                           `-/+/',
+    '.`                                 `/',
+  ];
+  const FETCH_INFO = [
+    { k: '', v: 'uday@arch', c: '#22e5ff' },
+    { k: '', v: '---------', c: '#8fa6cc' },
+    { k: 'OS', v: 'Arch Linux arm64' },
+    { k: 'Host', v: 'Microsoft Surface Pro 11' },
+    { k: 'Arch', v: 'arm64' },
+    { k: 'Display', v: '13" 3:2 touch' },
+    { k: 'Terminal', v: 'your browser' },
+    { k: 'Motto', v: 'I use arch btw' },
+  ];
+  const FONT5X7 = {
+    I: ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '#####'],
+    U: ['#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
+    S: ['.####', '#....', '#....', '.###.', '....#', '....#', '####.'],
+    E: ['#####', '#....', '#....', '####.', '#....', '#....', '#####'],
+    A: ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
+    R: ['####.', '#...#', '#...#', '####.', '#.#..', '#..#.', '#...#'],
+    C: ['.####', '#....', '#....', '#....', '#....', '#....', '.####'],
+    H: ['#...#', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
+    B: ['####.', '#...#', '#...#', '####.', '#...#', '#...#', '####.'],
+    T: ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..'],
+    W: ['#...#', '#...#', '#...#', '#.#.#', '#.#.#', '##.##', '#...#'],
+  };
+  // fastfetch screen grid (readable size) and a separate, chunkier grid for the banner letters
+  const EGG = { CW: 13, CH: 22, COLS: 72, TOP: 86, LEFT: 14, S: 20 };
+  const EGG_T = { type: 0.8, out: 2.2, hold: 5.2, morph: 7.3, banner: 13.0, end: 13.6 };
+
+  // banner text -> list of cells {c, r, ch, col} on a grid of S x S pixel cells (one character per font pixel)
+  function bannerCells(lines, cols, rows) {
+    const out = [];
+    const total = lines.length * 7 + (lines.length - 1) * 2;
+    let r0 = Math.max(0, Math.floor((rows - total) / 2));
+    lines.forEach((text) => {
+      const widths = [...text].map((chr) => (chr === ' ' ? 3 : 6));
+      const w = widths.reduce((a, b) => a + b, 0) - 1;
+      let x = Math.floor((cols - w) / 2);
+      [...text].forEach((chr, i) => {
+        const glyph = FONT5X7[chr];
+        if (glyph)
+          glyph.forEach((row, ry) =>
+            [...row].forEach((bit, rx) => {
+              if (bit === '#') out.push({ c: x + rx, r: r0 + ry, ch: '#@#%'[(rx + ry) % 4], col: ry < 4 ? '#eaf6ff' : '#22e5ff' });
+            })
+          );
+        x += widths[i];
+      });
+      r0 += 9;
+    });
+    return out;
+  }
+
   function createTerminal() {
     const cw = 1024;
     const ch = Math.round((cw * SCREEN_H) / SCREEN_W);
@@ -100,22 +174,43 @@
     const texture = new THREE.CanvasTexture(canvas);
     if ('encoding' in texture) texture.encoding = THREE.sRGBEncoding;
     let lastKey = '';
+    let bootT0 = 0; // the normal typing loop restarts from here
+    let pendingEgg = false;
+    let egg = null; // { t0, grid... } while the easter egg runs
+    let eggStill = false;
+    let lastEggDraw = -1;
 
-    function draw(t, still, force) {
-      const chars = still ? TERM_TOTAL : Math.min(TERM_TOTAL, Math.floor((t % TYPE_LOOP) * TYPE_CPS));
-      const typing = chars < TERM_TOTAL;
-      const blink = still || typing || Math.floor(t * 1.9) % 2 === 0;
-      const key = chars + ':' + blink;
-      if (!force && key === lastKey) return false;
-      lastKey = key;
+    const ROWS = Math.floor((ch - EGG.TOP - 10) / EGG.CH);
+    const fetchGrid = Array.from({ length: ROWS }, () => Array(EGG.COLS).fill(null));
+    const put = (r, c0, str, col) => [...str].forEach((chr, i) => chr !== ' ' && (fetchGrid[r][c0 + i] = { ch: chr, col }));
+    put(0, 0, '$ fastfetch', '#eaf6ff');
+    ARCH_LOGO.forEach((line, i) => put(2 + i, 0, line, '#22e5ff'));
+    const INFO_COL = 38;
+    FETCH_INFO.forEach((it, i) => {
+      const r = 4 + i;
+      if (it.k) {
+        put(r, INFO_COL, it.k + ':', '#22e5ff');
+        put(r, INFO_COL + it.k.length + 2, it.v, '#eaf6ff');
+      } else put(r, INFO_COL, it.v, it.c);
+    });
+    const SWATCH = ['#05070f', '#0f2a80', '#2f6bff', '#22e5ff', '#8fa6cc', '#eaf6ff'];
+    const swatchRow = 4 + FETCH_INFO.length + 1;
+    const BCOLS = Math.floor((cw - 24) / EGG.S);
+    const BROWS = Math.floor((ch - 62 - 10) / EGG.S);
+    const bCells = bannerCells(['I USE', 'ARCH BTW'], BCOLS, BROWS).map((cell) => {
+      const dx = (cell.c - BCOLS / 2) / (BCOLS / 2);
+      const dy = (cell.r - BROWS / 2) / (BROWS / 2);
+      return Object.assign(cell, { d: Math.min(1, Math.hypot(dx, dy) / 1.2), rnd: Math.random() });
+    });
+    const rnd = Array.from({ length: ROWS }, () => Array.from({ length: EGG.COLS }, () => Math.random()));
+    const GL = '!<>-_/[]{}=+*^?#01XKZ%&@';
 
+    function frameStart(title) {
       const bg = ctx.createLinearGradient(0, 0, 0, ch);
       bg.addColorStop(0, '#071026');
       bg.addColorStop(1, '#050a1a');
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, cw, ch);
-
-      // title bar
       ctx.fillStyle = 'rgba(47,107,255,0.14)';
       ctx.fillRect(0, 0, cw, 62);
       ['#22e5ff', '#2f6bff', '#8fa6cc'].forEach((c, i) => {
@@ -125,7 +220,151 @@
       ctx.font = '26px "Geist Pixel", monospace';
       ctx.fillStyle = '#8fa6cc';
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText('uday@bench: ~/samata', 150, 42);
+      ctx.textAlign = 'left';
+      ctx.fillText(title, 150, 42);
+    }
+    function frameEnd() {
+      ctx.fillStyle = 'rgba(0,0,0,0.14)';
+      for (let y = 0; y < ch; y += 4) ctx.fillRect(0, y, cw, 1);
+      const vg = ctx.createRadialGradient(cw / 2, ch / 2, ch * 0.35, cw / 2, ch / 2, cw * 0.65);
+      vg.addColorStop(0, 'rgba(0,0,0,0)');
+      vg.addColorStop(1, 'rgba(0,0,0,0.5)');
+      ctx.fillStyle = vg;
+      ctx.fillRect(0, 0, cw, ch);
+      texture.needsUpdate = true;
+    }
+
+    const fx = (c) => EGG.LEFT + c * EGG.CW + EGG.CW / 2;
+    const fy = (r) => EGG.TOP + r * EGG.CH + 16;
+
+    // e = seconds since the egg started
+    function drawEgg(e, glow) {
+      frameStart('uday@arch: ~');
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+
+      const morphP = (e - EGG_T.hold) / (EGG_T.morph - EGG_T.hold); // <0 before, 0..1 across the morph, >1 after
+      const fade = e > EGG_T.banner ? clamp(1 - (e - EGG_T.banner) / (EGG_T.end - EGG_T.banner), 0, 1) : 1;
+      ctx.globalAlpha = fade;
+
+      // ----- fastfetch screen (flickers away during the morph) -----
+      if (morphP < 1) {
+        ctx.font = '21px "Geist Pixel", monospace';
+        for (let r = 0; r < ROWS; r++) {
+          for (let c2 = 0; c2 < EGG.COLS; c2++) {
+            const src = fetchGrid[r][c2];
+            if (!src) continue;
+            const x = fx(c2);
+            const y = fy(r);
+            if (morphP < 0) {
+              let visible;
+              if (r === 0) visible = c2 < Math.floor(clamp(e / EGG_T.type, 0, 1) * 11);
+              else visible = e > EGG_T.type && e - EGG_T.type > (r / ROWS) * (EGG_T.out - EGG_T.type);
+              if (!visible) continue;
+              ctx.fillStyle = src.col;
+              ctx.fillText(src.ch, x, y);
+            } else {
+              const delay = (c2 / EGG.COLS) * 0.5 + rnd[r][c2] * 0.3;
+              const local = (morphP - delay * 0.7) / 0.3;
+              if (local < 0) {
+                ctx.fillStyle = src.col;
+                ctx.fillText(src.ch, x, y);
+              } else if (local < 1) {
+                ctx.globalAlpha = fade * (1 - local);
+                ctx.fillStyle = Math.random() < 0.5 ? '#22e5ff' : '#eaf6ff';
+                ctx.fillText(GL[(Math.random() * GL.length) | 0], x, y);
+                ctx.globalAlpha = fade;
+              }
+            }
+          }
+        }
+        // swatches + prompt with a blinking cursor
+        if (morphP < 0 && e > EGG_T.out - 0.3) {
+          SWATCH.forEach((col, i) => {
+            ctx.fillStyle = col;
+            ctx.fillRect(EGG.LEFT + INFO_COL * EGG.CW + i * 40, fy(swatchRow) - 16, 36, 20);
+          });
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#eaf6ff';
+          ctx.fillText('$', EGG.LEFT, fy(ROWS - 2));
+          if (Math.floor(e * 2) % 2 === 0) {
+            ctx.fillStyle = '#22e5ff';
+            ctx.fillRect(EGG.LEFT + 22, fy(ROWS - 2) - 16, 12, 20);
+          }
+          ctx.textAlign = 'center';
+        }
+      }
+
+      // ----- big ASCII banner, cells scramble in from the centre outwards -----
+      if (morphP > 0.3) {
+        ctx.font = '25px "Geist Pixel", monospace';
+        const bx = 12 + EGG.S / 2;
+        const by = 62 + 12;
+        for (let i = 0; i < bCells.length; i++) {
+          const cell = bCells[i];
+          const local = (morphP - (0.3 + cell.d * 0.45)) / 0.22;
+          if (local < 0) continue;
+          let chr = cell.ch;
+          let col = cell.col;
+          if (local < 1) {
+            chr = GL[(Math.random() * GL.length) | 0];
+            col = Math.random() < 0.5 ? '#22e5ff' : '#eaf6ff';
+          } else if (glow) {
+            const wave = Math.abs(cell.c - ((e * 14) % (BCOLS + 20)) + 10);
+            if (wave < 3) col = '#ffffff';
+            if (Math.random() < 0.0012) chr = GL[(Math.random() * GL.length) | 0];
+          }
+          const x = bx + cell.c * EGG.S;
+          const y = by + cell.r * EGG.S + 16;
+          ctx.fillStyle = col;
+          ctx.fillText(chr, x, y);
+          ctx.fillText(chr, x + 0.9, y); // fake bold so the letters read from far away
+        }
+        if (morphP > 1 && glow) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = 0.06 * fade;
+          ctx.fillStyle = '#22e5ff';
+          ctx.fillRect(0, 62, cw, ch);
+          ctx.globalCompositeOperation = 'source-over';
+        }
+      }
+      ctx.globalAlpha = 1;
+      frameEnd();
+    }
+
+    function draw(t, still, force) {
+      // easter egg
+      if (still && eggStill) {
+        drawEgg(EGG_T.morph + 1, false);
+        return true;
+      }
+      if (pendingEgg && !egg && !still) {
+        egg = { t0: t };
+        pendingEgg = false;
+      }
+      if (egg && !still) {
+        const e = t - egg.t0;
+        if (e >= EGG_T.end) {
+          egg = null;
+          bootT0 = t;
+          lastKey = '';
+        } else {
+          if (!force && t - lastEggDraw < 1 / 24) return false; // ~24 fps is plenty for text
+          lastEggDraw = t;
+          drawEgg(e, true);
+          return true;
+        }
+      }
+
+      const tt = t - bootT0;
+      const chars = still ? TERM_TOTAL : Math.min(TERM_TOTAL, Math.floor((tt % TYPE_LOOP) * TYPE_CPS));
+      const typing = chars < TERM_TOTAL;
+      const blink = still || typing || Math.floor(t * 1.9) % 2 === 0;
+      const key = chars + ':' + blink;
+      if (!force && key === lastKey) return false;
+      lastKey = key;
+
+      frameStart('uday@bench: ~/samata');
 
       // text
       ctx.font = '34px "Geist Pixel", monospace';
@@ -152,21 +391,21 @@
         ctx.fillRect(cursorX, cursorY - 28, 18, 34);
         ctx.shadowBlur = 0;
       }
-
-      // scanlines + vignette
-      ctx.fillStyle = 'rgba(0,0,0,0.14)';
-      for (let y = 0; y < ch; y += 4) ctx.fillRect(0, y, cw, 1);
-      const vg = ctx.createRadialGradient(cw / 2, ch / 2, ch * 0.35, cw / 2, ch / 2, cw * 0.65);
-      vg.addColorStop(0, 'rgba(0,0,0,0)');
-      vg.addColorStop(1, 'rgba(0,0,0,0.5)');
-      ctx.fillStyle = vg;
-      ctx.fillRect(0, 0, cw, ch);
-
-      texture.needsUpdate = true;
+      frameEnd();
       return true;
     }
 
-    return { texture, draw };
+    return {
+      texture,
+      draw,
+      startEgg() {
+        if (!egg) pendingEgg = true;
+      },
+      isEgg: () => !!egg || pendingEgg,
+      setEggStill(v) {
+        eggStill = v;
+      },
+    };
   }
 
   function glowTexture(inner, mid) {
@@ -644,6 +883,9 @@
 
   function init(opts) {
     opts = opts || {};
+    let xiaoDone = Promise.resolve();
+    let warmFrames = 0;
+    let introOn = !opts.holdIntro; // held while the boot loader is on screen; play() releases it
     const canvas = opts.canvas;
     const reduced = global.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const coarse = global.matchMedia('(pointer: coarse)').matches;
@@ -757,7 +999,7 @@
 
     function loadXiao() {
       const ready = THREE.GLTFLoader ? Promise.resolve() : loadScript('js/vendor/GLTFLoader.js');
-      ready
+      return ready
         .then(
           () =>
             new Promise((res, rej) => {
@@ -819,7 +1061,7 @@
       esp.group.scale.setScalar(portrait ? 0.55 : 0.85);
       espWrap.position.set(espBase.x, espBase.y, espBase.z);
     }
-    loadXiao();
+    xiaoDone = loadXiao();
 
     // glow pool under the laptop
     const glow = new THREE.Mesh(
@@ -924,10 +1166,10 @@
     }
 
     function update(t, dt) {
-      if (startT === null) startT = t;
-      const since = t - startT;
+      if (introOn && startT === null) startT = t;
+      const since = startT === null ? -1 : t - startT;
 
-      // lid opens on load
+      // lid opens on load (after the loader, if there is one)
       if (!reduced) state.open = easeOutCubic(clamp((since - 0.5) / 1.8, 0, 1));
       const hinge = model.hinge;
       if (hinge) hinge.rotation.x = -OPEN_ANGLE * state.open;
@@ -1026,8 +1268,16 @@
       const t = now / 1000;
       const rawDt = t - last;
       const dt = Math.min(0.05, Math.max(0.001, rawDt));
-      if (rawDt < 0.5) adapt(rawDt); // ignore the gap after a tab switch
       last = t;
+      // hidden behind the boot loader: warm up with a few frames (shaders, textures), then idle until play()
+      if (!introOn) {
+        if (warmFrames >= 3) return;
+        warmFrames++;
+        update(t, dt);
+        renderer.render(scene, camera);
+        return;
+      }
+      if (rawDt < 0.5) adapt(rawDt); // ignore the gap after a tab switch
       update(t, dt);
       renderer.render(scene, camera);
     }
@@ -1119,7 +1369,60 @@
     if (opts.glbUrl) loadGLB(opts.glbUrl);
     if (opts.onReady) opts.onReady();
 
+    // ready = every model loaded, shaders compiled and a first frame drawn, so nothing pops in when it is revealed
+    const fontsReady = document.fonts && document.fonts.load ? document.fonts.load('17px "Geist Pixel"').catch(() => {}) : Promise.resolve();
+    const ready = Promise.all([xiaoDone, fontsReady]).then(
+      () =>
+        new Promise((res) => {
+          try {
+            renderer.compile(scene, camera);
+          } catch (e) {}
+          if (reduced) renderStill();
+          global.requestAnimationFrame(() => global.requestAnimationFrame(res));
+        })
+    );
+
+    /* ---------- easter egg: fastfetch -> "I USE ARCH BTW" ---------- */
+
+    const ray = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    function hitScreen(cx, cy) {
+      const r = canvas.getBoundingClientRect();
+      if (!r.width || cx < r.left || cx > r.right || cy < r.top || cy > r.bottom) return false;
+      ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      const scr = model.laptop && model.laptop.getObjectByName('Screen');
+      return !!scr && ray.intersectObject(scr, false).length > 0;
+    }
+    let eggTimer = 0;
+    function fastfetch() {
+      if (reduced) {
+        // no animation: show the finished banner for a few seconds
+        terminal.setEggStill(true);
+        renderStill();
+        clearTimeout(eggTimer);
+        eggTimer = setTimeout(() => {
+          terminal.setEggStill(false);
+          renderStill();
+        }, 6000);
+        return;
+      }
+      terminal.startEgg();
+    }
+    const onClick = (e) => {
+      if (!visible || e.defaultPrevented) return;
+      if (e.target.closest && e.target.closest('a, button, input, textarea, select, label, [role="dialog"], .palette')) return;
+      if (hitScreen(e.clientX, e.clientY)) fastfetch();
+    };
+    global.addEventListener('click', onClick);
+
     return {
+      ready,
+      play() {
+        introOn = true;
+      },
+      fastfetch,
+      hitScreen,
       setModel,
       loadGLB,
       destroy() {
@@ -1127,6 +1430,7 @@
         ro.disconnect();
         if (io) io.disconnect();
         global.removeEventListener('pointermove', onPointer);
+        global.removeEventListener('click', onClick);
         document.removeEventListener('visibilitychange', onVis);
         renderer.dispose();
       },

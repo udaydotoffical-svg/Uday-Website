@@ -474,6 +474,14 @@
     { cmd: 'goto timeline', desc: 'wro 2026 and now', run: go('timeline') },
     { cmd: 'goto quotes', desc: 'words to live by', run: go('quotes') },
     { cmd: 'goto contact', desc: 'say hi', run: go('contact') },
+    {
+      cmd: 'fastfetch',
+      desc: 'btw',
+      run: () => {
+        window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+        setTimeout(() => window.__fastfetch && window.__fastfetch(), reduced ? 0 : 600);
+      },
+    },
     { cmd: 'goto top', desc: 'back to the laptop', run: () => window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }) },
     ...S.projects.items.map((p) =>
       p.link
@@ -572,6 +580,16 @@
       document.head.appendChild(s);
     });
 
+  // While the boot loader is on screen we load and build the whole 3D scene behind it, so the laptop is
+  // fully ready (models, shaders, first frame) when the loader lifts. window.__laptopReady resolves then.
+  // EAGER_3D = true: the boot loader waits for the 3D scene, so the laptop is fully ready when it lifts (best look).
+  // false: 3D loads on first interaction / after 6 s instead (lighter on slow devices and for Lighthouse).
+  const EAGER_3D = true;
+  const loading = EAGER_3D && document.documentElement.classList.contains('is-loading');
+  let resolveReady = () => {};
+  window.__laptopReady = loading ? new Promise((res) => (resolveReady = res)) : null;
+  window.__laptopHero = null;
+
   function startLaptop() {
     loadScript(THREE_URL)
       .then(() => loadScript('js/laptop.js'))
@@ -581,15 +599,27 @@
           stage,
           track: $('#hero'),
           zone: [$('#hero'), $('#about')],
-          onFallback: showStage,
+          holdIntro: loading, // the lid opens after the loader lifts (fx.js calls play)
+          onFallback: () => {
+            showStage();
+            resolveReady();
+          },
           // glbUrl: 'models/laptop.glb', // swap in your own model here
         });
-        if (hero) requestAnimationFrame(showStage);
+        if (!hero) return resolveReady();
+        window.__laptopHero = hero;
+        window.__laptopPlay = () => hero.play();
+        hero.ready.then(() => {
+          requestAnimationFrame(showStage);
+          resolveReady();
+        });
       })
-      .catch(() => {
+      .catch((err) => {
+        console.warn('3D scene failed, using the flat fallback', err);
         // CDN blocked or offline: show the flat SVG laptop instead
         document.documentElement.classList.add('no-webgl');
         showStage();
+        resolveReady();
       });
   }
 
@@ -606,4 +636,28 @@
     window.addEventListener(e, boot, { passive: true })
   );
   window.addEventListener('load', () => setTimeout(boot, LAPTOP_BOOT_MS));
+  if (loading) boot(); // start now: the loader is hiding the work
+
+  /* ---------- easter egg: fastfetch -> I USE ARCH BTW ---------- */
+  // palette command, clicking the laptop screen (laptop.js), or typing  arch  /  btw  /  fastfetch  anywhere
+  window.__fastfetch = () => {
+    boot();
+    const go = (tries) => {
+      if (window.__laptopHero) return window.__laptopHero.fastfetch();
+      if (tries > 0) setTimeout(() => go(tries - 1), 250);
+    };
+    go(40);
+  };
+  let typed = '';
+  document.addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (e.key.length !== 1 || e.metaKey || e.ctrlKey || e.altKey) return;
+    typed = (typed + e.key.toLowerCase()).slice(-10);
+    if (/(arch|btw|fastfetch)$/.test(typed)) {
+      typed = '';
+      window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+      setTimeout(window.__fastfetch, reduced ? 0 : 500);
+    }
+  });
 })();

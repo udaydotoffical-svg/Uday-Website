@@ -67,6 +67,19 @@ Everything is in `js/content.js`. To **add a project**, copy one object inside `
 | 3D laptop model | `glbUrl` line in `js/main.js` (commented) | See below. |
 | Formspree (optional) | `contact.formspreeId` in `js/content.js` | Empty = the form opens the visitor's email app (mailto). |
 
+## Easter egg: fastfetch -> "I USE ARCH BTW"
+
+Trigger it any of these ways (nothing on the page advertises it):
+- click the laptop screen
+- type `arch`, `btw` or `fastfetch` anywhere (outside a text box)
+- open the `/` command palette and run `fastfetch`
+
+The screen types `$ fastfetch`, prints the Arch logo and system info (`OS: Arch Linux arm64`, `Host: Microsoft Surface Pro 11`, `Arch: arm64` ...), then the characters scramble and morph into a big ASCII "I USE ARCH BTW", glows for a few seconds and goes back to the normal terminal. With reduced motion it just shows the finished banner for 6 seconds. All of it lives in `createTerminal()` in `js/laptop.js` (look for `ARCH_LOGO`, `FETCH_INFO`, `EGG_T` timings).
+
+## Boot loader and 3D
+
+On a first visit the 0-100 loader now waits for the real work: it loads Three.js, the XIAO model and the font, compiles the shaders and draws a few frames behind the loader, then lifts and only then opens the lid. So the laptop never pops in half-built. It waits at most 7 s. Switch `EAGER_3D` in `js/main.js` to `false` for the old lighter behaviour (3D loads on first interaction or after 6 s), which scores better in Lighthouse but can pop in.
+
 ## The "laptop" is a Surface Pro 11 + Flex Keyboard (black)
 
 Procedural, built in `buildSurface()` in `js/laptop.js`:
@@ -153,4 +166,4 @@ Press `/` anywhere (or tap the `/` button in the nav). Type to filter, arrows to
 - Three.js and the laptop code are not loaded until the first interaction (mouse move, touch, scroll, key) or 6 s after page load (`LAPTOP_BOOT_MS` in `js/main.js`), then the laptop fades in. This keeps the page fast. Pixel ratio is capped at 2, rendering pauses off-screen and in hidden tabs.
 - `prefers-reduced-motion`: the laptop renders a single still frame, particles and stars stop, no scroll animations.
 - No WebGL: a flat SVG laptop is shown instead.
-- Lighthouse (local run, software rendering, simulated mobile): performance 92-95 mobile / 100 desktop, accessibility 100, best practices 96, SEO 100. Re-run on your deployed URL (Chrome DevTools, Lighthouse tab).
+- Lighthouse (local run, software rendering, simulated mobile): with the 3D scene loading eagerly behind the loader, a software-rendered local run scored much lower on performance (mobile ~36, desktop ~50, because that run has no GPU); with `EAGER_3D = false` it was 92-95 mobile / 100 desktop. Accessibility 100, best practices 96, SEO 100. Re-run on your deployed URL (Chrome DevTools, Lighthouse tab).

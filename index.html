@@ -33,7 +33,7 @@
       try {
         if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !sessionStorage.getItem('uday-booted')) d.classList.add('is-loading');
       } catch (e) {}
-      setTimeout(function () { d.classList.remove('is-loading'); d.classList.add('is-intro'); }, 5000);
+      setTimeout(function () { d.classList.remove('is-loading'); d.classList.add('is-intro'); if (window.__laptopPlay) window.__laptopPlay(); }, 8000);
     })(document.documentElement);
   </script>
 </head>

@@ -54,6 +54,7 @@
 
   function intro() {
     root.classList.add('is-intro');
+    if (window.__laptopPlay) window.__laptopPlay(); // lid opens now, not behind the loader
     const u = $('.tag-uday');
     const s = $('.tag-singh');
     if (u) setTimeout(() => scramble(u, 'UDAY', 900), 120);
@@ -70,15 +71,25 @@
     const num = $('.loader-num', L);
     const bar = $('.loader-bar i', L);
     const lines = $$('.loader-log li', L);
-    const D = 1300;
+    const MIN = 1300; // shortest the loader stays up
+    const MAX = 7000; // never hang if the 3D scene is slow or blocked
     const start = performance.now();
+    let ready = !window.__laptopReady;
+    if (window.__laptopReady) window.__laptopReady.then(() => (ready = true), () => (ready = true));
+    let shown = 0;
     const step = (now) => {
-      const p = clamp((now - start) / D, 0, 1);
-      const e = 1 - Math.pow(1 - p, 3);
+      const el = now - start;
+      const done = (ready && el > MIN) || el > MAX;
+      // counter creeps toward 92% on time, then waits for the real 3D load before hitting 100
+      const target = done ? 1 : Math.min(el / MIN, 1) * 0.92;
+      shown += (target - shown) * (done ? 0.25 : 0.12);
+      const e = Math.min(shown, 1);
       num.textContent = String(Math.round(e * 100)).padStart(3, '0');
       bar.style.transform = `scaleX(${e})`;
       lines.forEach((li, i) => li.classList.toggle('on', e > (i + 1) / (lines.length + 1)));
-      if (p < 1) return requestAnimationFrame(step);
+      if (!(done && e > 0.995)) return requestAnimationFrame(step);
+      num.textContent = '100';
+      bar.style.transform = 'scaleX(1)';
       root.classList.add('loader-out');
       try {
         sessionStorage.setItem('uday-booted', '1');
