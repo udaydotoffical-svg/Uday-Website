@@ -1396,13 +1396,13 @@
 
     const ray = new THREE.Raycaster();
     const ndc = new THREE.Vector2();
-    function hitScreen(cx, cy) {
+    function hitLaptop(cx, cy) {
       const r = canvas.getBoundingClientRect();
       if (!r.width || cx < r.left || cx > r.right || cy < r.top || cy > r.bottom) return false;
       ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(ndc, camera);
-      const scr = model.laptop && model.laptop.getObjectByName('Screen');
-      return !!scr && ray.intersectObject(scr, false).length > 0;
+      // anywhere on the laptop model counts (screen, bezel, back, keyboard, touchpad, kickstand, pen)
+      return !!model.laptop && ray.intersectObject(model.laptop, true).length > 0;
     }
     let eggTimer = 0;
     function fastfetch() {
@@ -1422,7 +1422,7 @@
     const onClick = (e) => {
       if (!visible || e.defaultPrevented) return;
       if (e.target.closest && e.target.closest('a, button, input, textarea, select, label, [role="dialog"], .palette')) return;
-      if (hitScreen(e.clientX, e.clientY)) fastfetch();
+      if (hitLaptop(e.clientX, e.clientY)) fastfetch();
     };
     global.addEventListener('click', onClick);
 
@@ -1432,7 +1432,7 @@
         introOn = true;
       },
       fastfetch,
-      hitScreen,
+      hitLaptop,
       setModel,
       loadGLB,
       destroy() {

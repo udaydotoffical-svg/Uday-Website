@@ -70,7 +70,7 @@ Everything is in `js/content.js`. To **add a project**, copy one object inside `
 ## Easter egg: fastfetch -> "I USE ARCH BTW"
 
 Trigger it any of these ways (nothing on the page advertises it):
-- click the laptop screen
+- click anywhere on the laptop (screen, keyboard, back, kickstand...)
 - type `arch`, `btw` or `fastfetch` anywhere (outside a text box)
 - open the `/` command palette and run `fastfetch`
 
