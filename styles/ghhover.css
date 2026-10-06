@@ -1,0 +1,85 @@
+/* GitHub repo stats popup + the live demo panel (pairs with js/ghhover.js). Knowura tokens only. */
+
+.ghp {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 120;
+  width: min(320px, calc(100vw - 24px));
+  padding: 16px 18px 18px;
+  font-size: 15px;
+  line-height: 1.45;
+  background: color-mix(in srgb, var(--dark) 82%, var(--blue-deep));
+  opacity: 0;
+  translate: 0 -6px;
+  pointer-events: none; /* never blocks the links underneath, so you can slide from one link to the next */
+  transition: opacity 0.16s ease, translate 0.16s ease;
+}
+.ghp[hidden] { display: none; }
+.ghp.in { opacity: 1; translate: 0 0; }
+.ghp.above { translate: 0 6px; }
+.ghp.above.in { translate: 0 0; }
+.ghp-static { position: static; opacity: 1; translate: none; width: 100%; box-shadow: var(--shadow-md); pointer-events: auto; }
+
+.ghp-head { display: flex; align-items: center; gap: 10px; color: var(--text); font-size: 17px; word-break: break-all; }
+.ghp-head strong { font-weight: 400; }
+.ghp-ic { width: 1.1em; height: 1.1em; flex: none; color: var(--cyan); }
+.ghp-head .ghp-ic { width: 1.3em; height: 1.3em; color: var(--text); }
+.ghp-desc { margin: 8px 0 0; color: var(--text-dim); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.ghp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; list-style: none; margin: 14px 0 0; padding: 0; }
+.ghp-stats li {
+  display: grid; justify-items: start; gap: 0;
+  padding: 8px 10px;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+}
+.ghp-stats b { font-weight: 400; font-size: 20px; color: var(--text); line-height: 1.2; }
+.ghp-stats span { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+.ghp-stats .ghp-ic { width: 14px; height: 14px; margin-bottom: 2px; }
+
+.ghp-bar { display: flex; height: 10px; margin-top: 14px; border: 2px solid var(--ink); border-radius: 6px; overflow: hidden; box-shadow: var(--shadow-sm); }
+.ghp-bar i { display: block; height: 100%; }
+.ghp-langs { display: flex; flex-wrap: wrap; gap: 4px 14px; list-style: none; margin: 10px 0 0; padding: 0; font-size: 13px; color: var(--text); }
+.ghp-langs li { display: inline-flex; align-items: center; gap: 6px; }
+.ghp-langs i { width: 9px; height: 9px; border: 1.5px solid var(--ink); flex: none; }
+.ghp-langs span { color: var(--text-dim); }
+
+.ghp-skel { display: grid; gap: 8px; margin-top: 14px; }
+.ghp-skel i { height: 14px; border-radius: 4px; background: linear-gradient(110deg, var(--panel) 30%, color-mix(in srgb, var(--blue) 30%, var(--panel)) 50%, var(--panel) 70%) 0 0 / 200% 100%; animation: shimmer 1.4s linear infinite; }
+.ghp-skel i:nth-child(1) { width: 90%; } .ghp-skel i:nth-child(2) { width: 100%; height: 44px; } .ghp-skel i:nth-child(3) { width: 70%; }
+
+/* ---------- project card: live demo page ---------- */
+.repo-demo .browser-view { aspect-ratio: 16 / 10; }
+.demo-page { position: absolute; inset: 0; padding: 22px 26px; background: radial-gradient(80% 80% at 20% 0%, color-mix(in srgb, var(--blue-deep) 55%, transparent), transparent 70%), var(--dark); overflow: hidden; }
+.dp-h { margin: 0 0 14px; font-size: 20px; color: var(--text); }
+.dp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.dp-list li { display: flex; align-items: center; gap: 10px; color: var(--text-dim); }
+.dp-list .icon { color: var(--text-dim); }
+.dp-list a { color: var(--cyan); font-size: 17px; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 4px; word-break: break-all; }
+.dp-list a:hover, .dp-list a:focus-visible { text-decoration-style: solid; background: rgba(34, 229, 255, 0.1); outline: none; }
+.dp-hint { margin: 18px 0 0; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+.hint-touch { display: none; }
+.dp-inline { margin-top: 10px; }
+@media (hover: none), (pointer: coarse) { .hint-fine { display: none; } .hint-touch { display: inline; } .demo-page { overflow: auto; } }
+
+/* ---------- card features checklist ---------- */
+.features { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; }
+.features li { position: relative; padding-left: 24px; font-size: 16px; color: var(--text); }
+.features li::before { content: ''; position: absolute; left: 0; top: 0.5em; width: 11px; height: 11px; background: var(--cyan); border: 2px solid var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+
+@media (prefers-reduced-motion: reduce) { .ghp { transition: none; } .ghp-skel i { animation: none; } }
+
+/* small screens / touch: let the demo grow with its content so the pinned stats card is visible */
+@media (max-width: 860px), (hover: none), (pointer: coarse) {
+  .repo-demo .browser-view { aspect-ratio: auto; overflow: visible; }
+  .demo-page { position: static; overflow: visible; padding: 18px 16px 20px; }
+  .dp-list a { font-size: 15px; }
+  .dp-h { font-size: 18px; }
+}
+.ghp-stats li { min-width: 0; }
+.ghp-static { padding: 14px; }
+.ghp-static .ghp-stats { gap: 6px; }
+.ghp-static .ghp-stats li { padding: 6px 8px; }

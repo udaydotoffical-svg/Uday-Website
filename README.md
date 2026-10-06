@@ -53,6 +53,12 @@ Everything is in `js/content.js`. To **add a project**, copy one object inside `
 }
 ```
 
+## Project cards: features, GitHub button, repo-stats popup
+
+Projects in `js/content.js` can have an optional `features: [...]` checklist and an optional `github: 'https://github.com/owner/repo'`, which adds a GitHub button next to the main button. **Any** link to a `github.com/owner/repo` page on the site (including that button) shows a glass popup on hover or keyboard focus with live stars, forks, watchers and a language bar, straight from the public GitHub API (`js/ghhover.js`, `styles/ghhover.css`). No key, no tracking; results are cached for 10 minutes in the tab's sessionStorage only. Unauthenticated GitHub allows 60 requests per hour per visitor, so if that runs out the popup says it couldn't reach GitHub.
+
+The "GitHub Repo Stats on Hover" card (`id: 'repo-stats'`) uses `visual.type: 'hovercard'`: a fake page of real repo links (`visual.repos`) that plays the popup automatically when scrolled into view and stops as soon as you hover. On phones it pins a static stats card instead.
+
 ## Placeholders to replace
 
 | What | Where | Notes |
@@ -60,6 +66,7 @@ Everything is in `js/content.js`. To **add a project**, copy one object inside `
 | Real logo | `assets/logo-k.svg` and `assets/favicon.svg` | Placeholder K (pencil stem + open book arms), used as the browser-tab favicon. Replace both files, keep the names. The top bar has no logo. |
 | Knowura screenshot | `assets/knowura-fallback.svg` → `projects.items[0].visual.fallback` | Shown while loading and if the live frame is blocked. Use a 16:10 png/webp. |
 | Samata photo or video (optional) | `projects.items[1].visual` in `js/content.js` | The panel is an animated demo signal monitor, no assets needed. For a real photo or video, change it to `type: 'media'` with `image` (and optional `video`). |
+| Repo Stats extension GitHub repo (optional) | `projects.items[2].github` in `js/content.js` | Commented out: add the repo URL and a GitHub button appears (with the hover popup). The Gumroad link is already set. |
 | Samata link (optional) | `projects.items[1].link` | Left out on purpose (the repo is private); a badge line shows instead. Add `link: { label, href }` to get a button. |
 | Site URL | `siteUrl` in `js/content.js`, plus the OG tags in `index.html` | Set to `https://uday3ebsite.vercel.app`. |
 | OG image | `assets/og.png` | 1200x630, regenerate if you change your name block. |

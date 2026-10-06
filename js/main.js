@@ -107,6 +107,28 @@
       </div>`;
   }
 
+  function hovercardVisual(p) {
+    const v = p.visual;
+    return `
+      <div class="browser repo-demo" role="group" aria-label="${esc(v.alt)}">
+        <div class="browser-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="urlbar input-look">${esc(v.displayUrl)}</span>
+          <span class="demo-chip">live demo</span>
+        </div>
+        <div class="browser-view">
+          <div class="demo-page">
+            <p class="dp-h">${esc(v.title)}</p>
+            <ul class="dp-list">
+              ${v.repos.map((r) => `<li>${icon('i-github')}<a href="https://github.com/${esc(r)}" target="_blank" rel="noopener">${esc(r)}</a></li>`).join('')}
+            </ul>
+            <p class="dp-hint"><span class="hint-fine">Hover a link</span><span class="hint-touch">Stats card</span></p>
+            <div class="dp-inline" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
   function renderProjects() {
     const pr = S.projects;
     $('#projects').innerHTML = `
@@ -121,16 +143,23 @@
                 <p class="kicker">${esc(p.kicker)}</p>
                 <h3>${esc(p.title)}</h3>
                 <p>${esc(p.description)}</p>
+                ${p.features ? `<ul class="features">${p.features.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}
                 <ul class="tags">${tags(p.tags)}</ul>
                 ${
-                  p.link
-                    ? `<a class="btn" href="${esc(p.link.href)}" target="_blank" rel="noopener">${esc(p.link.label)} ${icon('i-arrow')}</a>`
+                  p.link || p.github
+                    ? `<div class="project-actions">${
+                        p.link ? `<a class="btn" href="${esc(p.link.href)}" target="_blank" rel="noopener">${esc(p.link.label)} ${icon('i-arrow')}</a>` : ''
+                      }${
+                        p.github
+                          ? `<a class="btn btn-icon" href="${esc(p.github)}" target="_blank" rel="noopener" title="GitHub repo">${icon('i-github')}<span class="sr-only">${esc(p.title)} on GitHub</span></a>`
+                          : ''
+                      }</div>`
                     : p.badge
                       ? `<p class="badge glass-light">${esc(p.badge)}</p>`
                       : ''
                 }
               </div>
-              <div class="project-visual">${p.visual.type === 'browser' ? browserVisual(p) : p.visual.type === 'signal' ? signalVisual(p) : mediaVisual(p)}</div>
+              <div class="project-visual">${p.visual.type === 'browser' ? browserVisual(p) : p.visual.type === 'signal' ? signalVisual(p) : p.visual.type === 'hovercard' ? hovercardVisual(p) : mediaVisual(p)}</div>
             </article>`
             )
             .join('')}

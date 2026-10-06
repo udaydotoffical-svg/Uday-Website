@@ -8,6 +8,9 @@
  *   'browser' -> fake browser window with a live <iframe> (set embed:false to show only the fallback image)
  *   'media'   -> image, or a video if `video` is set
  *   'signal'  -> animated EEG/IMU demo monitor (no assets needed)
+ *   'hovercard' -> fake page of GitHub repo links; hovering one opens the live repo-stats popup (visual.repos)
+ * `features` (optional list) is shown as a checklist; `github` (optional repo URL) adds a GitHub button whose
+ * hover shows the same live stats popup.
  * `link` is optional: leave it out and a `badge` line is shown instead.
  */
 window.SITE = {
@@ -76,6 +79,31 @@ window.SITE = {
           type: 'signal', // animated demo signal monitor. Use type: 'media' + image/video for a real photo instead.
           title: 'samata // signal monitor',
           alt: 'Animated demo of the Samata EEG and IMU signal monitor',
+        },
+      },
+      {
+        id: 'repo-stats',
+        title: 'GitHub Repo Stats on Hover',
+        kicker: 'Chrome extension',
+        description:
+          'Hover over any GitHub link and get an instant stats popup showing stars, forks, watchers and languages. Built with the glassmorphic Knowura theme. All data is stored locally, with zero tracking.',
+        features: [
+          'Real-time repo stats on hover',
+          'Watchlist functionality',
+          'Chrome notifications for releases and milestones',
+          'Advanced filters and search',
+          'Privacy-first: local storage only',
+        ],
+        tags: ['Chrome Extension', 'GitHub', 'Glassmorphism', 'Privacy-first', 'Local storage'],
+        link: { label: 'Get it on Gumroad', href: 'https://udaydot.gumroad.com/l/repo_stats' },
+        // github: 'https://github.com/udaydotoffical-svg/<repo>', // PLACEHOLDER: add the extension's repo URL and a GitHub button appears; hovering it shows the stats popup too
+        visual: {
+          type: 'hovercard',
+          displayUrl: 'github.com',
+          title: 'Repos I follow',
+          // real public repos: hover (or wait) and the popup shows their live numbers from the GitHub API
+          repos: ['udaydotoffical-svg/Knowura', 'udaydotoffical-svg/knowura-print', 'mrdoob/three.js'],
+          alt: 'Demo page of GitHub links; hovering a link shows a stats popup with stars, forks, watchers and languages',
         },
       },
     ],
