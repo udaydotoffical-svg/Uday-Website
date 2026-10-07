@@ -27,10 +27,11 @@
   <link rel="preload" as="image" href="assets/ocean-bg.jpg" fetchpriority="low">
   <link rel="stylesheet" href="styles/fx.css">
   <link rel="stylesheet" href="styles/ghhover.css">
+  <link rel="stylesheet" href="styles/liquid.css">
   <script>
     // boot loader once per session (skipped for reduced motion); failsafes if JS below never runs
     (function (d) {
-      d.classList.add('js');
+      d.classList.add('js', 'liquid'); // 'liquid' = the liquid glass skin; delete it here to get the original Knowura glass
       try {
         if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !sessionStorage.getItem('uday-booted')) d.classList.add('is-loading');
       } catch (e) {}
@@ -136,6 +137,7 @@
   <script defer src="js/content.js"></script>
   <script defer src="js/main.js"></script>
   <script defer src="js/ghhover.js"></script>
+  <script defer src="js/liquidglass.js"></script>
   <script defer src="js/fx.js"></script>
 </body>
 </html>

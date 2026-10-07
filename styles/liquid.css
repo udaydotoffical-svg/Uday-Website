@@ -1,0 +1,186 @@
+/* Liquid glass skin. Active when <html class="liquid"> (set in index.html; remove that class to get the original
+   Knowura brutalist glass back). knowura.css is untouched. js/liquidglass.js adds the real edge refraction
+   (Chromium); everywhere else you get the blur + rim-light version below. */
+
+.liquid {
+  --lg-rim: rgba(255, 255, 255, 0.5);
+  --lg-fill:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.17) 0%, rgba(255, 255, 255, 0.05) 34%, rgba(255, 255, 255, 0.02) 62%, rgba(255, 255, 255, 0.12) 100%);
+  --lg-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.14),
+    inset 1px 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 0 22px rgba(255, 255, 255, 0.05),
+    0 14px 38px rgba(0, 0, 0, 0.38);
+  --lg-shadow-sm:
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.14),
+    0 6px 16px rgba(0, 0, 0, 0.3);
+  --lg-blur: blur(9px) saturate(1.7) brightness(1.1);
+}
+
+/* ---------- big surfaces ---------- */
+.liquid .glass,
+.liquid .browser,
+.liquid .palette-box,
+.liquid .ghp {
+  background: var(--lg-fill), color-mix(in srgb, var(--blue-deep) 16%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--lg-rim);
+  border-left-color: rgba(255, 255, 255, 0.34);
+  box-shadow: var(--lg-shadow);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
+}
+/* the About / project cards need more body so text stays readable over the water */
+.liquid .glass { background: var(--lg-fill), color-mix(in srgb, var(--dark) 38%, transparent); }
+.liquid .palette-box { background: var(--lg-fill), color-mix(in srgb, var(--dark) 70%, transparent); }
+.liquid .ghp { background: var(--lg-fill), color-mix(in srgb, var(--dark) 62%, transparent); }
+
+/* ---------- small surfaces: glass fill + rim light, but NO backdrop blur of their own (hundreds of tiny blur layers
+   are what makes a page lag); big surfaces and buttons above/below keep the real blur and refraction ---------- */
+.liquid .glass-light,
+.liquid .tag-chip,
+.liquid .eyebrow,
+.liquid .badge,
+.liquid .urlbar,
+.liquid .demo-chip,
+.liquid .leds li,
+.liquid .ghp-stats li,
+.liquid .view-lock span {
+  background: var(--lg-fill), color-mix(in srgb, var(--dark) 30%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-top-color: rgba(255, 255, 255, 0.46);
+  box-shadow: var(--lg-shadow-sm);
+  backdrop-filter: none;
+}
+.liquid .tl-card,
+.liquid .quote,
+.liquid .media {
+  background: var(--lg-fill), color-mix(in srgb, var(--dark) 28%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-top-color: rgba(255, 255, 255, 0.46);
+  box-shadow: var(--lg-shadow);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
+}
+.liquid .urlbar { box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 -1px 1px rgba(255, 255, 255, 0.12); }
+
+/* lite mode (set automatically by liquidglass.js on slow devices): flat glass, no refraction, one cheap blur */
+.liquid-lite .glass, .liquid-lite .tl-card, .liquid-lite .quote, .liquid-lite .media, .liquid-lite .browser,
+.liquid-lite .palette-box, .liquid-lite .ghp, .liquid-lite .tag, .liquid-lite .nav, .liquid-lite .btn, .liquid-lite .marquee {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+
+/* ---------- buttons ---------- */
+.liquid .btn {
+  background: var(--lg-fill), rgba(34, 229, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-top-color: rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  box-shadow: var(--lg-shadow-sm);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
+  text-shadow: 0 0 14px rgba(34, 229, 255, 0.45);
+}
+.liquid .btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  background: var(--lg-fill), rgba(47, 107, 255, 0.28);
+  box-shadow: var(--lg-shadow-sm), 0 0 26px rgba(34, 229, 255, 0.35);
+}
+.liquid .btn.btn-icon { border-radius: 50%; }
+.liquid .btn.magnetic:hover { transform: translate(calc(var(--mx, 0px) - 1px), calc(var(--my, 0px) - 2px)) scale(1.04); }
+.liquid .nav-cmd { border-radius: 50%; }
+
+/* ---------- inputs ---------- */
+.liquid .input {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-top-color: rgba(255, 255, 255, 0.4) !important;
+  border-radius: 14px !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 -1px 1px rgba(255, 255, 255, 0.1) !important;
+}
+.liquid .input:focus {
+  border-color: rgba(34, 229, 255, 0.8) !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(34, 229, 255, 0.22), 0 0 24px rgba(34, 229, 255, 0.25) !important;
+}
+
+/* ---------- nav: a floating glass pill ---------- */
+.liquid .nav {
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 8px 12px 8px 26px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-top-color: rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  background: var(--lg-fill), color-mix(in srgb, var(--dark) 40%, transparent);
+  box-shadow: var(--lg-shadow);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
+}
+.liquid .nav.nav-hidden { transform: translateY(-160%); }
+@media (max-width: 640px) { .liquid .nav { padding: 6px 8px 6px 16px; top: 8px; left: 8px; right: 8px; } }
+
+/* ---------- hero name blocks become glass too ---------- */
+.liquid .tag {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-top-color: rgba(255, 255, 255, 0.7);
+  box-shadow: var(--lg-shadow);
+  text-shadow: 0 4px 22px rgba(0, 0, 0, 0.5);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
+}
+.liquid .tag-uday { background: var(--lg-fill), rgba(47, 107, 255, 0.5); }
+.liquid .tag-singh { background: var(--lg-fill), color-mix(in srgb, var(--blue-deep) 42%, transparent); }
+
+/* ---------- marquee bands: tinted glass strips ---------- */
+.liquid .marquee {
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-left: 0;
+  border-right: 0;
+  border-top-color: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 12px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px) saturate(1.6);
+  -webkit-backdrop-filter: blur(6px) saturate(1.6);
+}
+.liquid .mq-a { background: var(--lg-fill), rgba(34, 229, 255, 0.78); }
+.liquid .mq-b { background: var(--lg-fill), rgba(47, 107, 255, 0.62); }
+.liquid .mq-c { background: var(--lg-fill), rgba(5, 7, 15, 0.55); }
+
+/* ---------- small details lose the hard black outlines ---------- */
+.liquid .section-title::after { border: 0; box-shadow: 0 0 14px var(--cyan); height: 4px; border-radius: 4px; }
+.liquid .features li::before { border: 0; box-shadow: 0 0 10px var(--cyan); border-radius: 3px; }
+.liquid .timeline li::after { border: 0; border-radius: 4px; box-shadow: 0 0 12px var(--cyan); }
+.liquid .timeline::before { border: 0; border-radius: 4px; }
+.liquid .dots i { border: 0; }
+.liquid .sig-panel, .liquid .ghp-bar { border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4); }
+.liquid .tl-card:hover { transform: translateY(-3px); box-shadow: var(--lg-shadow), 0 0 28px rgba(34, 229, 255, 0.18); }
+.liquid .browser.is-live { box-shadow: var(--lg-shadow), 0 0 0 2px var(--cyan), 0 0 30px rgba(34, 229, 255, 0.35); }
+.liquid .project h3, .liquid .section-title, .liquid .quote p, .liquid .brand-word { text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55); }
+.liquid .project h3 { filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.5)); }
+.liquid .loader-num { text-shadow: 0 0 40px rgba(34, 229, 255, 0.35); }
+
+/* soft light that follows the pointer across a glass panel (set by liquidglass.js) */
+.liquid .glass, .liquid .glass-light, .liquid .btn { --gx: 50%; --gy: 0%; }
+@supports (background: color-mix(in srgb, red, blue)) {
+  .liquid .glass:hover, .liquid .tl-card:hover, .liquid .quote:hover {
+    background:
+      radial-gradient(260px circle at var(--gx) var(--gy), rgba(255, 255, 255, 0.14), transparent 70%),
+      var(--lg-fill), color-mix(in srgb, var(--dark) 36%, transparent);
+  }
+}
+
+/* nav pill: links centred, the "/" button on the right */
+.liquid .nav { justify-content: center; position: fixed; }
+.liquid .nav-links { margin: 0 auto; }
+.liquid .nav-cmd { position: absolute; right: 10px; top: 50%; translate: 0 -50%; width: 40px; height: 40px; }
+@media (max-width: 640px) { .liquid .nav { padding: 6px 56px 6px 14px; } .liquid .nav-links { gap: 12px; } }
+
+/* custom cursor: a glass lens instead of a hard-edged box */
+.liquid .cursor-ring { border: 1px solid rgba(255, 255, 255, 0.55); border-radius: 50%; box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 0 18px rgba(34, 229, 255, 0.25); background: rgba(255, 255, 255, 0.06); }
+.liquid .cursor-ring.has-label { background: rgba(34, 229, 255, 0.85); border-color: rgba(255, 255, 255, 0.8); box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7), 0 6px 22px rgba(0, 0, 0, 0.4); }
+.liquid .cursor-ring.is-text { border-radius: 2px; }

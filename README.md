@@ -74,6 +74,16 @@ The "GitHub Repo Stats on Hover" card (`id: 'repo-stats'`) uses `visual.type: 'h
 | 3D laptop model | `glbUrl` line in `js/main.js` (commented) | See below. |
 | Formspree (optional) | `contact.formspreeId` in `js/content.js` | Empty = the form opens the visitor's email app (mailto). |
 
+## Liquid glass (the whole site)
+
+Every glass surface (cards, nav pill, buttons, name blocks, marquee bands, popups, inputs) is liquid glass: bright rim light, soft inner glow, tinted fill, and on Chromium browsers (Chrome, Edge, Brave, Android Chrome) **real refraction**, meaning light bends at the edges of each panel and you see the ESP32, the laptop and the ocean warped behind it.
+
+- `styles/liquid.css`: the skin, active while `<html class="liquid">`. It sits on top of the untouched `knowura.css`.
+- `js/liquidglass.js`: builds an SVG displacement map per panel size and applies it live as a `backdrop-filter`. This replaces `dashersw/liquid-glass-js` (which photographs the page once with html2canvas and needs one WebGL context per element, so it can't see the 3D scene and tops out around 16 elements). Same look, but live and site-wide.
+- Safari/Firefox get the CSS-only version (blur + rim light + tint, no bending).
+- On slow devices it switches to **lite mode** automatically (about 9 s after load, if frames average slower than ~24 fps): flat blur, no refraction.
+- To get the original brutalist Knowura glass back, delete `'liquid'` from the `classList.add('js', 'liquid')` line in `index.html`.
+
 ## Easter egg: fastfetch -> "I USE ARCH BTW"
 
 Trigger it any of these ways (nothing on the page advertises it):
