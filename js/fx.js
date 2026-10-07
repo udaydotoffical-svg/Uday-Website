@@ -181,9 +181,7 @@
 
   const quotes = $$('.quote p').map((p) => {
     const ws = p.textContent.split(/\s+/).filter(Boolean);
-    // two stacked copies per word: the real word (.a) and a heavily redacted ghost (.b); see styles/redaction.css
-    p.setAttribute('aria-label', ws.join(' '));
-    p.innerHTML = ws.map((w) => `<span class="w" aria-hidden="true"><span class="a">${w}</span><span class="b">${w}</span></span>`).join(' ');
+    p.innerHTML = ws.map((w) => `<span class="w">${w}</span>`).join(' ');
     return { el: p, words: $$('.w', p), lit: -1 };
   });
 

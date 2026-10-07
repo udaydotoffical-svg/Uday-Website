@@ -142,6 +142,8 @@ html.js:not(.is-intro) .hero-copy > .eyebrow { clip-path: inset(0 100% 0 0); }
 .tl-card:hover { transform: translate(-3px, -3px); box-shadow: var(--shadow-lg); }
 
 /* ---------- quotes: words light up while scrolling ---------- */
+.quote p .w { opacity: 0.18; transition: opacity 0.35s, color 0.35s, text-shadow 0.35s; }
+.quote p .w.lit { opacity: 1; }
 .quote p .w.lit:last-child { color: var(--cyan); text-shadow: 0 0 18px rgba(34, 229, 255, 0.6); }
 .quote { transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .quote:hover { transform: scale(1.02); }
@@ -162,6 +164,7 @@ html.js:not(.is-intro) .hero-copy > .eyebrow { clip-path: inset(0 100% 0 0); }
 /* ---------- reduced motion: keep it calm ---------- */
 @media (prefers-reduced-motion: reduce) {
   .mega-star, .mq-track { animation: none; }
+  .quote p .w { opacity: 1; }
   .js-reveal .project.reveal { clip-path: none; translate: 0 0; }
   .nav, .name-stack { transition: none; }
 }
