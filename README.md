@@ -74,6 +74,16 @@ The "GitHub Repo Stats on Hover" card (`id: 'repo-stats'`) uses `visual.type: 'h
 | 3D laptop model | `glbUrl` line in `js/main.js` (commented) | See below. |
 | Formspree (optional) | `contact.formspreeId` in `js/content.js` | Empty = the form opens the visitor's email app (mailto). |
 
+## Second font: Redaction
+
+Redaction (open source, SIL OFL; <https://www.redaction.us>) is the site's serif "voice" next to Geist Pixel's UI voice. It comes in damage levels, and the one from your screenshot (stair-stepped edges, letters intact) is **Redaction 35**.
+
+- **Used for:** the hero tagline (italic), section titles, the About lede and the quotes. Hovering a section title "redacts" it (level 70).
+- **Quotes:** every word starts as a heavily redacted ghost (level 70) and un-redacts to level 35 as you scroll, like dragging the slider on the Redaction site. Reduced motion shows them clean.
+- **Files:** `assets/fonts/redaction-{35,50,70}-{normal,italic}.woff2` (about 210 KB in total, self-hosted, only the 35 italic is preloaded). `styles/redaction.css` has the `@font-face`s and where each is used.
+- **Use it anywhere:** add class `serif` (and `serif-italic`) to any element. The `!important` in that class is what beats Knowura's `* { font-family: ... !important }`, which is untouched. Child elements need the class too, or a selector that targets them.
+- Change the look by swapping `35` for `10`, `20`, `50` or `70` in `redaction.css` (install `@fontsource/redaction-NN` and copy the woff2 files).
+
 ## Liquid glass (the whole site)
 
 Every glass surface (cards, nav pill, buttons, name blocks, marquee bands, popups, inputs) is liquid glass: bright rim light, soft inner glow, tinted fill, and on Chromium browsers (Chrome, Edge, Brave, Android Chrome) **real refraction**, meaning light bends at the edges of each panel and you see the ESP32, the laptop and the ocean warped behind it.

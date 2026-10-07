@@ -1,0 +1,69 @@
+/* Second typeface: Redaction (open source, SIL OFL, by Titus Kaphar / Reilly / Collins). Used for the "voice" of the
+   site (section titles, tagline, About lede, quotes) while Geist Pixel stays the UI/system voice.
+   Redaction comes in damage levels: 35 = the main one (stair-stepped edges, letters intact), 50 = hover, 70 = heavily
+   redacted (used for words that are not "un-redacted" yet in the quotes). knowura.css is untouched; the !important
+   below out-ranks its `* { font-family: ... !important }` because a class beats the universal selector. */
+
+@font-face { font-family: 'Redaction 35'; font-style: normal; font-weight: 400; font-display: swap; src: url(../assets/fonts/redaction-35-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Redaction 35'; font-style: italic; font-weight: 400; font-display: swap; src: url(../assets/fonts/redaction-35-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Redaction 50'; font-style: normal; font-weight: 400; font-display: swap; src: url(../assets/fonts/redaction-50-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Redaction 50'; font-style: italic; font-weight: 400; font-display: swap; src: url(../assets/fonts/redaction-50-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Redaction 70'; font-style: normal; font-weight: 400; font-display: swap; src: url(../assets/fonts/redaction-70-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Redaction 70'; font-style: italic; font-weight: 400; font-display: swap; src: url(../assets/fonts/redaction-70-italic.woff2) format('woff2'); }
+
+/* reusable classes: <h2 class="serif">, <p class="serif serif-italic"> ... */
+.serif, .serif * { font-family: 'Redaction 35', Georgia, 'Times New Roman', serif !important; font-weight: 400; }
+.serif-italic, .serif-italic * { font-style: italic; }
+
+/* ---- where it is used ---- */
+
+/* hero tagline */
+.hero .tagline {
+  font-family: 'Redaction 35', Georgia, serif !important;
+  font-style: italic;
+  font-size: clamp(30px, 4.2vw, 50px);
+  line-height: 1.12;
+  letter-spacing: -0.005em;
+  color: var(--text);
+}
+
+/* section titles (the "// 01" label above stays pixel) */
+.section-title .st-text {
+  font-family: 'Redaction 35', Georgia, serif !important;
+  font-size: clamp(46px, 7.4vw, 88px);
+  line-height: 0.98;
+  letter-spacing: -0.012em;
+}
+.section-title .st-text:hover { font-family: 'Redaction 70', Georgia, serif !important; } /* hover = "redact" it */
+
+/* About lede */
+.about-card p:first-child {
+  font-family: 'Redaction 35', Georgia, serif !important;
+  font-size: clamp(26px, 3vw, 34px);
+  line-height: 1.22;
+  color: var(--text);
+}
+
+/* project kickers stay pixel; the card descriptions stay pixel for readability */
+
+/* quotes: big italic serif. Each word is two stacked copies (inline-grid, so the width is the wider of the two and
+   nothing jumps): a heavily redacted ghost (level 70) and the real word (level 35). Scrolling un-redacts them. */
+.quote p, .quote p .w, .quote p .w .a {
+  font-family: 'Redaction 35', Georgia, serif !important;
+  font-style: italic;
+  font-size: clamp(27px, 2.9vw, 37px);
+  line-height: 1.2;
+}
+.quote p .w { display: inline-grid; opacity: 1; transition: color 0.35s, text-shadow 0.35s; }
+.quote p .w > span { grid-area: 1 / 1; transition: opacity 0.45s ease; }
+.quote p .w .a { opacity: 0; }
+.quote p .w .b { font-family: 'Redaction 70', Georgia, serif !important; opacity: 0.4; }
+.quote p .w.lit .a { opacity: 1; }
+.quote p .w.lit .b { opacity: 0; }
+.quote::before { font-family: 'Redaction 35', Georgia, serif !important; font-size: 90px; line-height: 0.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .quote p .w .a { opacity: 1; }
+  .quote p .w .b { display: none; }
+  .section-title .st-text:hover { font-family: 'Redaction 35', Georgia, serif !important; }
+}
