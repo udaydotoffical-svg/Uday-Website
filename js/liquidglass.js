@@ -13,7 +13,10 @@
   'use strict';
 
   const root = document.documentElement;
+  // OPT-IN: the SVG refraction is the most expensive effect on the site, so it is off by default.
+  // Enable it by adding 'liquid-refract' next to 'liquid' in index.html (or open the page with ?refract).
   if (!root.classList.contains('liquid')) return;
+  if (!root.classList.contains('liquid-refract') && !/[?&]refract\b/.test(location.search)) return;
 
   const ua = navigator.userAgent;
   const chromium = /Chrome\/|Chromium\//.test(ua) && !/Firefox\/|FxiOS|CriOS|EdgiOS/.test(ua);

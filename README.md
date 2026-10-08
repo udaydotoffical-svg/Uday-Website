@@ -82,15 +82,17 @@ Contrast comes from two typefaces only:
 
 Files: `assets/fonts/redaction-35-{normal,italic}.woff2` (about 90 KB, self-hosted, the italic is preloaded). `styles/redaction.css` has the `@font-face` and the list of what uses it. To make another element a heading in Redaction add it to that list, or give it class `serif` (child elements need the class too, because Knowura's `* { font-family: ... !important }` hits every element; the `!important` in `.serif` is what beats it).
 
-## Liquid glass (the whole site)
+## Liquid glass (performance-first)
 
-Every glass surface (cards, nav pill, buttons, name blocks, marquee bands, popups, inputs) is liquid glass: bright rim light, soft inner glow, tinted fill, and on Chromium browsers (Chrome, Edge, Brave, Android Chrome) **real refraction**, meaning light bends at the edges of each panel and you see the ESP32, the laptop and the ocean warped behind it.
+Every glass surface has the liquid-glass look: bright rim light, soft inner glow and a tinted fill (`styles/liquid.css`, active while `<html class="liquid">`; delete that class in `index.html` for the original Knowura glass).
 
-- `styles/liquid.css`: the skin, active while `<html class="liquid">`. It sits on top of the untouched `knowura.css`.
-- `js/liquidglass.js`: builds an SVG displacement map per panel size and applies it live as a `backdrop-filter`. This replaces `dashersw/liquid-glass-js` (which photographs the page once with html2canvas and needs one WebGL context per element, so it can't see the 3D scene and tops out around 16 elements). Same look, but live and site-wide.
-- Safari/Firefox get the CSS-only version (blur + rim light + tint, no bending).
-- On slow devices it switches to **lite mode** automatically (about 9 s after load, if frames average slower than ~24 fps): flat blur, no refraction.
-- To get the original brutalist Knowura glass back, delete `'liquid'` from the `classList.add('js', 'liquid')` line in `index.html`.
+**There is deliberately no backdrop blur and no refraction by default.** Each `backdrop-filter` re-blurs whatever moves behind it (the 3D scene, the marquees, the ocean) on every frame, and dozens of them made the page lag. The panels use a stronger tint instead, which looks very close and costs almost nothing.
+
+Opt-in extras, if your machine is fast:
+- Real blur: set `--lg-blur: blur(9px) saturate(1.7) brightness(1.1)` at the top of `styles/liquid.css`.
+- Real **refraction** (light bends at panel edges, Chromium only): add `liquid-refract` next to `liquid` in `index.html`, or open the page with `?refract`. `js/liquidglass.js` builds an SVG displacement map per panel and applies it as a live `backdrop-filter`. It is the most expensive effect on the site.
+
+Other lag fixes: no film grain, the Samata signal runs at 30 fps without glow, the 3D scene renders at most 1.5x pixel density (and lowers itself further if frames run slow), and the ocean freezes once you scroll.
 
 ## Easter egg: fastfetch -> "I USE ARCH BTW"
 
@@ -180,7 +182,7 @@ and remove any `X-Frame-Options` header from that file, from `next.config.js` `h
 - **Scroll**: progress bar, nav hides on scroll down, name tags drift apart, section titles decode, timeline line draws itself, quotes light up word by word.
 - **Mega footer**: giant "LET'S BUILD" email link with a hover wave.
 - **Ocean background** (`assets/ocean-bg.jpg`, 1400px / ~100 KB, `.ocean` in `styles/fx.css`): your water photo under a deep-blue veil. It drifts slowly only while you are at the top of the page and freezes once you scroll, because the glass panels blur whatever is behind them every frame and a moving background made the whole page lag (measured: ~2x slower per frame). No mouse/scroll parallax, one layer, off on phones and for reduced motion. Swap the photo by replacing the file (keep it under ~150 KB); tune the darkness in the `body::after` veil in `styles/site.css`.
-- Static film grain overlay. Everything heavy switches off under `prefers-reduced-motion`.
+ Everything heavy switches off under `prefers-reduced-motion`.
 
 ## Command palette
 

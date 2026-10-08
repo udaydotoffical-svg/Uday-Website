@@ -909,7 +909,7 @@
       if (opts.onFallback) opts.onFallback(err);
       return null;
     }
-    renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 1.5));
     if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
     else renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1165,7 +1165,7 @@
       const parent = canvas.parentElement || canvas;
       const w = Math.max(1, parent.clientWidth);
       const h = Math.max(1, parent.clientHeight);
-      renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 2) * quality);
+      renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 1.5) * quality);
       renderer.setSize(w, h, false);
       aspect = w / h;
       placeEsp();
@@ -1268,7 +1268,7 @@
       if (slowFrames > 45 && quality > 0.5) {
         quality = quality > 0.75 ? 0.75 : 0.5;
         slowFrames = 0;
-        renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 2) * quality);
+        renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 1.5) * quality);
         renderer.setSize(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight, false);
       }
     }

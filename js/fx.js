@@ -108,9 +108,6 @@
   const progress = mk('div', 'scroll-progress');
   progress.setAttribute('aria-hidden', 'true');
   document.body.appendChild(progress);
-  const grain = mk('div', 'grain');
-  grain.setAttribute('aria-hidden', 'true');
-  document.body.appendChild(grain);
 
   const words = S.marquee || ['Firmware', 'Hardware', 'WRO 2026', 'Knowura', 'Sensors', 'Vadodara'];
   function marquee(cls, list) {

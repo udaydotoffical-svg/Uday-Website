@@ -348,8 +348,6 @@
         ctxE.stroke();
         ctxE.lineWidth = Math.max(2, 2 * dpr);
         ctxE.strokeStyle = COLORS[k];
-        ctxE.shadowColor = COLORS[k];
-        ctxE.shadowBlur = 6 * dpr;
         ctxE.beginPath();
         const step = 3 * dpr;
         for (let x = 0; x <= w; x += step) {
@@ -357,7 +355,6 @@
           x === 0 ? ctxE.moveTo(x, y) : ctxE.lineTo(x, y);
         }
         ctxE.stroke();
-        ctxE.shadowBlur = 0;
       }
     }
 
@@ -388,8 +385,11 @@
 
     let visible = false;
     let raf = 0;
+    let lastDraw = 0;
     const frame = (now) => {
       raf = requestAnimationFrame(frame);
+      if (now - lastDraw < 33) return; // 30 fps is plenty for a signal trace
+      lastDraw = now;
       const t = now / 1000;
       drawEEG(t);
       drawIMU(t);
