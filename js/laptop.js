@@ -79,9 +79,9 @@
   const TERM_LINES = [
     { t: '$ whoami', c: '#eaf6ff', prompt: true },
     { t: 'uday singh // firmware dev', c: '#8fa6cc' },
-    { t: '$ ./flash --board samata', c: '#eaf6ff', prompt: true },
-    { t: '[ok] eeg ........ online', c: '#22e5ff' },
-    { t: '[ok] imu ........ online', c: '#22e5ff' },
+    { t: '$ ./flash --board xiao-esp32s3', c: '#eaf6ff', prompt: true },
+    { t: '[ok] sensors .... online', c: '#22e5ff' },
+    { t: '[ok] wifi ....... online', c: '#22e5ff' },
     { t: '[ok] firmware .. running', c: '#22e5ff' },
     { t: '$ ./talk --to software', c: '#eaf6ff', prompt: true },
     { t: '> hello, world', c: '#2f6bff' },
@@ -374,7 +374,7 @@
       if (!force && key === lastKey) return false;
       lastKey = key;
 
-      frameStart('uday@bench: ~/samata');
+      frameStart('uday@bench: ~/firmware');
 
       // text
       ctx.font = '34px "Geist Pixel", monospace';

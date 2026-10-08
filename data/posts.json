@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "id": "building-this-portfolio",
+      "title": "How I built this portfolio, and what made it lag",
+      "date": "2026-10-08",
+      "tags": [
+        "Web",
+        "Three.js",
+        "Performance"
+      ],
+      "summary": "A Surface Pro and an ESP32 in 3D, an ocean background, liquid glass. Here is what the page is made of and the one thing that nearly broke it.",
+      "body": "This site is plain HTML, CSS and JavaScript. No framework, no build step. The 3D laptop is Three.js, and the ESP32 next to it is my own XIAO ESP32-S3, converted from its STEP file into a web model.\n\n## Two fonts, on purpose\n\nGeist Pixel does the system voice: labels, buttons, body text. Redaction 35 does the headings. Two typefaces with very different personalities give the page contrast without adding colour.\n\n## The lag\n\nI wanted every panel to look like liquid glass, which usually means a blur behind each one. The catch is that a blur re-blurs whatever moves behind it, on every frame. With a 3D scene, scrolling bands and an ocean behind dozens of panels, the page slowed to a crawl.\n\nThe fix was to stop blurring everywhere. The panels keep the rim light, the inner glow and a stronger tint, and almost nobody can tell the difference. The expensive blur is now opt-in.\n\n> Measure first. The thing I assumed was slow was not the thing that was slow.\n\n## The easter egg\n\nClick the laptop, or type arch, and the screen runs fastfetch for a Surface Pro on Arch Linux ARM, then morphs it into big ASCII letters. I will not spoil the last line."
+    },
+    {
+      "id": "hello-world",
+      "title": "Hello, world: I build hardware that talks to software",
+      "date": "2026-10-07",
+      "tags": [
+        "Intro",
+        "Firmware",
+        "WRO"
+      ],
+      "summary": "Who I am, what I am building right now, and why I wrote the firmware for a brain-signal headband.",
+      "body": "I am Uday, a student developer from Vadodara, India. Firmware and hardware are my favourite part of any build: the moment a sensor reading turns into something you can see on a screen.\n\nIn 2026 I competed at WRO Future Innovators with team CultureWear, as the primary firmware and hardware developer. I also wrote the firmware for Samata, a wearable EEG and IMU headband built for WRO Nationals.\n\nRight now I am fully focused on Knowura, an education AI app. I will use this space to write about what I learn along the way."
+    }
+  ]
+}

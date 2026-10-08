@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en" class="js liquid">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blog editor | Uday Singh</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#05070f">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="https://cdn.jsdelivr.net/fontsource/fonts/geist-pixel@5.3.0/latin-400-normal.woff2">
+  <link rel="stylesheet" href="/styles/knowura.css">
+  <link rel="stylesheet" href="/styles/site.css">
+  <link rel="stylesheet" href="/styles/liquid.css">
+  <link rel="stylesheet" href="/styles/redaction.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body class="admin">
+  <main class="ad-wrap">
+    <header class="ad-top">
+      <a class="ad-back btn" href="/#blog">&larr; Site</a>
+      <h1 class="ad-title">Blog editor</h1>
+      <button type="button" class="btn" id="logout" hidden>Log out</button>
+    </header>
+
+    <p class="ad-note glass-light" id="boot" role="status">Loading&hellip;</p>
+
+    <!-- not set up yet -->
+    <section class="glass ad-card" id="setup" hidden>
+      <h2>Almost there: set the password</h2>
+      <p>The editor needs two settings on Vercel. Project &rarr; Settings &rarr; Environment Variables, then redeploy.</p>
+      <p>Still missing: <strong id="setup-missing"></strong></p>
+      <ol class="ad-steps">
+        <li><b>ADMIN_PASSWORD</b>: your editor password. Use a long passphrase (10+ characters).</li>
+        <li><b>GITHUB_TOKEN</b>: GitHub &rarr; Settings &rarr; Developer settings &rarr; Fine-grained tokens. Only this repository, permission <b>Contents: Read and write</b>.</li>
+        <li>Optional: <b>SESSION_SECRET</b> (any long random text), <b>GITHUB_REPO</b> and <b>GITHUB_BRANCH</b>.</li>
+      </ol>
+    </section>
+
+    <!-- login -->
+    <section class="glass ad-card ad-login" id="login" hidden>
+      <h2>Log in</h2>
+      <form id="login-form" autocomplete="on">
+        <label class="ad-label" for="pw">Password</label>
+        <input class="input" id="pw" name="password" type="password" autocomplete="current-password" required>
+        <p class="status" id="login-status" role="alert"></p>
+        <button class="btn" type="submit" id="login-btn">Log in</button>
+      </form>
+    </section>
+
+    <!-- editor -->
+    <div class="ad-grid" id="app" hidden>
+      <aside class="glass ad-side" aria-label="Posts">
+        <button type="button" class="btn ad-new" id="new-post">+ New post</button>
+        <ul class="ad-list" id="post-list"></ul>
+      </aside>
+
+      <section class="ad-main" aria-label="Editor">
+        <div class="glass ad-card ad-meta">
+          <div class="ad-field ad-wide">
+            <label class="ad-label" for="f-title">Title</label>
+            <input class="input" id="f-title" maxlength="140" autocomplete="off">
+          </div>
+          <div class="ad-field">
+            <label class="ad-label" for="f-id">Link name <span class="ad-hint" id="f-id-hint"></span></label>
+            <input class="input" id="f-id" maxlength="60" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="ad-field">
+            <label class="ad-label" for="f-date">Date</label>
+            <input class="input" id="f-date" type="date">
+          </div>
+          <div class="ad-field ad-wide">
+            <label class="ad-label" for="f-tags">Tags <span class="ad-hint">comma separated</span></label>
+            <input class="input" id="f-tags" autocomplete="off" placeholder="Firmware, WRO">
+          </div>
+          <div class="ad-field ad-wide">
+            <label class="ad-label" for="f-sum">Summary <span class="ad-hint" id="sum-count"></span></label>
+            <textarea class="input" id="f-sum" rows="2" maxlength="300"></textarea>
+          </div>
+        </div>
+
+        <div class="glass ad-card ad-write">
+          <div class="ad-toolbar" role="toolbar" aria-label="Formatting">
+            <button type="button" class="tb" data-cmd="h3" title="Heading" aria-label="Heading">H</button>
+            <button type="button" class="tb" data-cmd="h4" title="Sub-heading" aria-label="Sub-heading">h</button>
+            <button type="button" class="tb" data-cmd="bold" title="Bold (Ctrl+B)" aria-label="Bold"><b>B</b></button>
+            <button type="button" class="tb" data-cmd="italic" title="Italic (Ctrl+I)" aria-label="Italic">I</button>
+            <button type="button" class="tb" data-cmd="code" title="Inline code" aria-label="Inline code">&lt;/&gt;</button>
+            <button type="button" class="tb" data-cmd="link" title="Link (Ctrl+K)" aria-label="Link">Link</button>
+            <button type="button" class="tb" data-cmd="quote" title="Quote" aria-label="Quote">&ldquo;</button>
+            <button type="button" class="tb" data-cmd="pre" title="Code block" aria-label="Code block">{ }</button>
+            <button type="button" class="tb" data-cmd="ul" title="Bullet list" aria-label="Bullet list">&bull;</button>
+            <button type="button" class="tb" data-cmd="ol" title="Numbered list" aria-label="Numbered list">1.</button>
+            <button type="button" class="tb" data-cmd="hr" title="Divider" aria-label="Divider">&mdash;</button>
+            <span class="ad-spacer"></span>
+            <button type="button" class="tb tb-mode" id="mode" aria-pressed="false" title="Switch between the visual editor and raw markdown">Markdown</button>
+          </div>
+          <div class="reader-box-sim">
+            <div class="prose ad-editor" id="editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Post body" spellcheck="true"></div>
+            <textarea class="input ad-raw" id="raw" aria-label="Post body in markdown" spellcheck="false" hidden></textarea>
+          </div>
+        </div>
+
+        <div class="ad-actions">
+          <p class="status" id="save-status" role="status"></p>
+          <span class="ad-count" id="read-count"></span>
+          <button type="button" class="btn ad-del" id="delete" hidden>Delete</button>
+          <button type="button" class="btn" id="save">Save &amp; publish</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/js/md.js"></script>
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

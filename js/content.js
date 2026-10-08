@@ -11,6 +11,8 @@
  *   'hovercard' -> fake page of GitHub repo links; hovering one opens the live repo-stats popup (visual.repos)
  * `features` (optional list) is shown as a checklist; `github` (optional repo URL) adds a GitHub button whose
  * hover shows the same live stats popup.
+ * Blog: posts live in data/posts.json (markdown bodies) and are written from the /admin editor.
+ * Only the section title and intro are here. The reader opens at #blog/<id>, so every post has a shareable link.
  * `link` is optional: leave it out and a `badge` line is shown instead.
  */
 window.SITE = {
@@ -19,7 +21,7 @@ window.SITE = {
   eyebrow: 'Student dev · Vadodara, India',
   description:
     'Uday Singh is a student developer and hardware builder from Vadodara, India, focused on firmware and hardware. WRO 2026 Future Innovators, team CultureWear.',
-  siteUrl: 'https://uday3ebsite.vercel.app', // used for Open Graph
+  siteUrl: 'https://udaysingh.vercel.app', // used for Open Graph
 
   links: {
     github: 'https://github.com/udaydotoffical-svg',
@@ -31,6 +33,7 @@ window.SITE = {
   nav: [
     { label: 'about', href: '#about' },
     { label: 'projects', href: '#projects' },
+    { label: 'blog', href: '#blog' },
     { label: 'timeline', href: '#timeline' },
     { label: 'contact', href: '#contact' },
   ],
@@ -63,7 +66,7 @@ window.SITE = {
           url: 'https://knowura.vercel.app',
           displayUrl: 'knowura.vercel.app',
           fallback: 'assets/knowura-fallback.svg', // PLACEHOLDER: swap for a real screenshot
-          alt: 'Knowura app preview',
+          alt: 'Screenshot of the Knowura app: a dark blue chat screen with a sidebar of conversations on the left and a message box at the bottom',
         },
       },
       {
@@ -107,6 +110,12 @@ window.SITE = {
         },
       },
     ],
+  },
+
+  blog: {
+    title: 'Blog',
+    intro: 'Notes from the bench: firmware, hardware and building this site.',
+    // posts: see data/posts.json
   },
 
   timeline: {

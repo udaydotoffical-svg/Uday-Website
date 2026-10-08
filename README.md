@@ -13,6 +13,11 @@ js/laptop.js          3D laptop (Three.js)
 js/fx.js              motion layer: boot loader, cursor, scramble text, marquees, tilt, scroll effects
 styles/fx.css         styles for the motion layer
 api/embed-check.js    Vercel function: checks if a site allows iframes
+api/admin/*.js        blog editor API: login, logout, posts (password gate, saves to GitHub)
+api/_lib.js           shared helpers for the editor API (not a route)
+admin/                the /admin visual blog editor (index.html, admin.js, admin.css)
+data/posts.json       the blog posts (markdown bodies), written by the editor
+js/md.js              tiny safe markdown renderer used by the blog and the editor
 assets/               logo, favicon, OG image, placeholders
 vercel.json           headers + cache
 ```
@@ -32,7 +37,7 @@ Open the printed URL. (`/api/embed-check` only exists on Vercel; locally the Kno
 3. Framework preset: **Other**. Leave build command and output directory empty. Deploy.
 4. Open your new URL, then set it in two places so link previews work:
    - `siteUrl` in `js/content.js`
-   - the three `https://uday3ebsite.vercel.app/...` lines (`og:url`, `og:image`) in `index.html`
+   - the three `https://udaysingh.vercel.app/...` lines (`og:url`, `og:image`) in `index.html`
 
 Optional: add a custom domain under Project, Settings, Domains.
 
@@ -68,7 +73,7 @@ The "GitHub Repo Stats on Hover" card (`id: 'repo-stats'`) uses `visual.type: 'h
 | Samata photo or video (optional) | `projects.items[1].visual` in `js/content.js` | The panel is an animated demo signal monitor, no assets needed. For a real photo or video, change it to `type: 'media'` with `image` (and optional `video`). |
 | Repo Stats extension GitHub repo (optional) | `projects.items[2].github` in `js/content.js` | Commented out: add the repo URL and a GitHub button appears (with the hover popup). The Gumroad link is already set. |
 | Samata link (optional) | `projects.items[1].link` | Left out on purpose (the repo is private); a badge line shows instead. Add `link: { label, href }` to get a button. |
-| Site URL | `siteUrl` in `js/content.js`, plus the OG tags in `index.html` | Set to `https://uday3ebsite.vercel.app`. |
+| Site URL | `siteUrl` in `js/content.js`, plus the OG tags in `index.html` | Set to `https://udaysingh.vercel.app`. |
 | OG image | `assets/og.png` | 1200x630, regenerate if you change your name block. |
 | Timeline | `timeline.items` in `js/content.js` | Wording is a draft built from what you told me; edit freely. |
 | 3D laptop model | `glbUrl` line in `js/main.js` (commented) | See below. |
@@ -103,9 +108,35 @@ Trigger it any of these ways (nothing on the page advertises it):
 
 The screen types `$ fastfetch`, prints the Arch logo and system info (a full Surface Pro 11 on Arch Linux ARM readout: `OS`, `Host`, `Kernel`, `Packages`, `Display 2880x1920 @ 120 Hz`, `CPU Snapdragon X Plus`, ... edit `FETCH_INFO`), then the characters scramble and morph into a big ASCII "I USE ARCH BTW", glows for a few seconds and goes back to the normal terminal. With reduced motion it just shows the finished banner for 6 seconds. All of it lives in `createTerminal()` in `js/laptop.js` (look for `ARCH_LOGO`, `FETCH_INFO`, `EGG_T` timings).
 
+## Blog and the /admin editor
+
+Posts are stored in `data/posts.json` (one entry per post, body in markdown) and the site loads them when the page opens. You can edit that file by hand, or write posts in the visual editor at **`/admin`** (your-site/admin). The editor is a real WYSIWYG: the text area uses the same `.prose` styles as the live reader, with a toolbar for heading, bold, italic, inline code, link, quote, code block, lists and a divider, and a **Markdown** button to switch to the raw text. Pasting always pastes plain text.
+
+Markdown supported: `## heading`, `### sub-heading`, `> quote`, fenced code, `- list`, `1. list`, `---`, `**bold**`, `*italic*`, `` `code` ``, `[text](https://link)`. Everything is HTML-escaped before it is shown, so a post can never inject script. Cards open an in-page reader at `#blog/<id>` (shareable link, Esc / Back / click outside closes), and the `/` palette gets `read <id>` commands automatically.
+
+### Turn the editor on (one time)
+
+The site is static, so the editor saves by committing `data/posts.json` to GitHub through two small Vercel functions; Vercel then redeploys (about a minute) and the post is live. In Vercel: Project, Settings, Environment Variables:
+
+| Variable | What |
+|---|---|
+| `ADMIN_PASSWORD` | your editor password, 10+ characters (a long passphrase is best) |
+| `GITHUB_TOKEN` | GitHub, Settings, Developer settings, Fine-grained tokens. Only this repository, permission **Contents: Read and write** |
+| `SESSION_SECRET` | optional, any long random text (signs the login cookie) |
+| `GITHUB_REPO` / `GITHUB_BRANCH` | optional, default `udaydotoffical-svg/uday-website` and `main` |
+
+Redeploy after adding them. Until both required values exist, `/admin` just shows what is missing.
+
+### How the verification works
+
+- Login is a password check on the server (constant-time compare). A wrong password is slowed down, and after 5 wrong tries from one address it locks that address for 15 minutes.
+- A correct password sets a signed, `HttpOnly`, `Secure`, `SameSite=Strict` cookie that expires after 8 hours and is only sent to `/api/admin`. The password and the GitHub token never reach the browser.
+- Every save and delete also checks the request really came from this site (Origin and a custom header), and the posts are validated on the server (slug, length, date, tags).
+- `/admin` is `noindex` and not cached. This is single-user protection, not a multi-user system. If you want it stronger later, the next step is GitHub sign-in limited to your account.
+
 ## Boot loader and 3D
 
-On a first visit the 0-100 loader now waits for the real work: it loads Three.js, the XIAO model and the font, compiles the shaders and draws a few frames behind the loader, then lifts and only then opens the lid. So the laptop never pops in half-built. It waits at most 7 s. Switch `EAGER_3D` in `js/main.js` to `false` for the old lighter behaviour (3D loads on first interaction or after 6 s), which scores better in Lighthouse but can pop in.
+On a first visit the 0-100 loader loads the 3D scene *inside itself*: Three.js, the laptop code, the XIAO model and the font start right after the first paint (so they never delay it), the counter waits for them, shaders are compiled and a few frames are drawn behind the loader, and only then does it lift and the lid open. It never waits longer than `LOADER_MAX` (4 s, in `runLoader()` in `js/fx.js`); if the scene is later than that it fades in afterwards. A **Skip** button (or Esc) ends it immediately. It shows once per browser session and not at all with reduced motion. A failsafe in `index.html` removes it after 5 s even if the scripts never run. On repeat visits (no loader) the 3D scene loads lazily after the window `load` event.
 
 ## The "laptop" is a Surface Pro 11 + Flex Keyboard (black)
 
@@ -161,7 +192,7 @@ If you see `X-Frame-Options: DENY` (or `SAMEORIGIN`), or a `frame-ancestors` tha
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' https://uday3ebsite.vercel.app" }
+        { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' https://udaysingh.vercel.app" }
       ]
     }
   ]
@@ -181,7 +212,7 @@ and remove any `X-Frame-Options` header from that file, from `next.config.js` `h
 - **Kinetic marquees**: words come from `marquee` in `js/content.js`; scrolling speeds them up and flips direction.
 - **Scroll**: progress bar, nav hides on scroll down, name tags drift apart, section titles decode, timeline line draws itself, quotes light up word by word.
 - **Mega footer**: giant "LET'S BUILD" email link with a hover wave.
-- **Ocean background** (`assets/ocean-bg.jpg`, 1400px / ~100 KB, `.ocean` in `styles/fx.css`): your water photo under a deep-blue veil. It drifts slowly only while you are at the top of the page and freezes once you scroll, because the glass panels blur whatever is behind them every frame and a moving background made the whole page lag (measured: ~2x slower per frame). No mouse/scroll parallax, one layer, off on phones and for reduced motion. Swap the photo by replacing the file (keep it under ~150 KB); tune the darkness in the `body::after` veil in `styles/site.css`.
+- **Ocean background** (`assets/ocean-bg.webp` 1600px / 58 KB on desktop, `assets/ocean-bg-sm.webp` 800px / 24 KB on phones; `.ocean` in `styles/fx.css`): your water photo under a deep-blue veil. It drifts slowly only while you are at the top of the page and freezes once you scroll, because the glass panels blur whatever is behind them every frame and a moving background made the whole page lag (measured: ~2x slower per frame). No mouse/scroll parallax, one layer, off on phones and for reduced motion. Swap the photo by replacing the file (keep it under ~150 KB); tune the darkness in the `body::after` veil in `styles/site.css`.
  Everything heavy switches off under `prefers-reduced-motion`.
 
 ## Command palette

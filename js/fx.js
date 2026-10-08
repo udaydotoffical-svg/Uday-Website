@@ -54,7 +54,8 @@
 
   function intro() {
     root.classList.add('is-intro');
-    if (window.__laptopPlay) window.__laptopPlay(); // lid opens now, not behind the loader
+    window.__introStarted = true;
+    if (window.__laptopPlay) window.__laptopPlay(); // lid opens now, not behind the loader (or as soon as the 3D scene is ready)
     const u = $('.tag-uday');
     const s = $('.tag-singh');
     if (u) setTimeout(() => scramble(u, 'UDAY', 900), 120);
@@ -71,15 +72,22 @@
     const num = $('.loader-num', L);
     const bar = $('.loader-bar i', L);
     const lines = $$('.loader-log li', L);
-    const MIN = 1300; // shortest the loader stays up
-    const MAX = 7000; // never hang if the 3D scene is slow or blocked
+    const MIN = 1000; // shortest the loader stays up (ms)
+    const LOADER_MAX = 4000; // hard cap (ms): the loader waits for the 3D scene this long at most; if it is late it fades in afterwards
+    const MAX = LOADER_MAX;
     const start = performance.now();
     let ready = !window.__laptopReady;
     if (window.__laptopReady) window.__laptopReady.then(() => (ready = true), () => (ready = true));
     let shown = 0;
+    let skipped = false;
+    const skip = () => { skipped = true; };
+    const skipBtn = $('#loader-skip');
+    if (skipBtn) { skipBtn.addEventListener('click', skip); skipBtn.focus({ preventScroll: true }); }
+    window.addEventListener('keydown', (e) => e.key === 'Escape' && skip());
     const step = (now) => {
       const el = now - start;
-      const done = (ready && el > MIN) || el > MAX;
+      const done = skipped || (ready && el > MIN) || el > MAX;
+      if (skipped) shown = 1;
       // counter creeps toward 92% on time, then waits for the real 3D load before hitting 100
       const target = done ? 1 : Math.min(el / MIN, 1) * 0.92;
       shown += (target - shown) * (done ? 0.25 : 0.12);
@@ -156,7 +164,12 @@
     if (!node) return;
     const span = mk('span', 'st-text');
     span.textContent = node.textContent;
+    // the visible text is scrambled while it animates, so screen readers must never see it: hide it and give them the real heading
+    span.setAttribute('aria-hidden', 'true');
+    const real = mk('span', 'sr-only');
+    real.textContent = node.textContent.trim();
     h.replaceChild(span, node);
+    span.after(real);
   });
 
   if ('IntersectionObserver' in window) {
@@ -282,6 +295,7 @@
     // nav links scramble on hover
     $$('.nav-links a').forEach((a) => {
       const t = a.textContent;
+      a.setAttribute('aria-label', t); // the hover scramble must never change what a screen reader announces
       a.addEventListener('pointerenter', () => scramble(a, t, 380));
     });
   }

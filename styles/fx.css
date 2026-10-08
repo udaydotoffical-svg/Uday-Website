@@ -11,6 +11,7 @@
 }
 .is-loading { overflow: hidden; }
 .loader-out .loader { clip-path: inset(0 0 100% 0); }
+.loader-skip { position: absolute; top: 20px; right: 20px; z-index: 2; min-width: 88px; min-height: 48px; justify-content: center; }
 .loader-log { list-style: none; margin: 0; padding: 0; font-size: 15px; color: var(--text-dim); align-self: start; }
 .loader-log li { opacity: 0.15; transition: opacity 0.2s; }
 .loader-log li.on { opacity: 1; }
@@ -157,6 +158,10 @@ html.js:not(.is-intro) .hero-copy > .eyebrow { clip-path: inset(0 100% 0 0); }
   .quote p .w { opacity: 1; }
   .js-reveal .project.reveal { clip-path: none; translate: 0 0; }
   .nav, .name-stack { transition: none; }
+  /* the hero name, stars and copy just appear (no drop-in / spin-in / rise-in) */
+  .is-intro .tag, .is-intro .star, .is-intro .hero-copy > *, .is-intro .hero-copy > .eyebrow { animation: none; opacity: 1; filter: none; clip-path: none; }
+  .mq-track { transform: none !important; }
+  .loader-num, .loader-bar i { transition: none; }
 }
 
 @media (max-width: 640px) {
@@ -176,13 +181,13 @@ html.js:not(.is-intro) .hero-copy > .eyebrow { clip-path: inset(0 100% 0 0); }
 .ocean { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; background: var(--dark); contain: strict; }
 .ocean i {
   position: absolute; inset: -4%;
-  background: url('../assets/ocean-bg.jpg') center / cover no-repeat;
+  background: url('../assets/ocean-bg.webp') center / cover no-repeat;
   will-change: transform;
   animation: swell 40s ease-in-out infinite alternate;
 }
 @keyframes swell { from { transform: scale(1.02) translate3d(-2%, 0.5%, 0); } to { transform: scale(1.1) translate3d(2%, -1.5%, 0); } }
 .is-scrolled .ocean i { animation-play-state: paused; will-change: auto; }
-@media (max-width: 860px), (pointer: coarse) { .ocean i { animation: none; } }
+@media (max-width: 860px), (pointer: coarse) { .ocean i { animation: none; background-image: url('../assets/ocean-bg-sm.webp'); } } /* phones: 24 KB version */
 @media (prefers-reduced-motion: reduce) { .ocean i { animation: none; } }
 
 /* readability over the water */

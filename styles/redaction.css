@@ -47,3 +47,11 @@
 }
 
 /* Everything else (body text, quotes, labels, buttons, nav, terminal) stays Geist Pixel. */
+
+/* blog: post card titles, article title and sub-headings are headings, so they use Redaction 35 */
+.post h3, .reader h2, .prose h3 {
+  font-family: 'Redaction 35', Georgia, serif !important;
+}
+.post h3 { font-size: clamp(30px, 3vw, 38px); line-height: 1.02; }
+.reader h2 { font-size: clamp(42px, 6.5vw, 66px); line-height: 0.98; letter-spacing: -0.01em; }
+.prose h3 { font-size: clamp(30px, 4vw, 38px); }

@@ -26,7 +26,7 @@
   /* ---------- section renderers ---------- */
 
   const heading = (num, title) =>
-    `<h2 class="section-title"><span class="num">${num}</span>${esc(title)}</h2>`;
+    `<h2 class="section-title"><span class="num" aria-hidden="true">${num}</span>${esc(title)}</h2>`;
 
   const tags = (list, cls) => list.map((t) => `<li class="tag-chip glass-light ${cls || ''}">${esc(t)}</li>`).join('');
 
@@ -167,11 +167,54 @@
       </div>`;
   }
 
+  /* ---------- blog: card list + in-page reader (#blog/<id>) ---------- */
+
+  const fmtDate = (iso) => new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const readMins = (post) => Math.max(1, Math.round(MD.words(post.body) / 200));
+
+  S.blog.items = []; // filled from data/posts.json (written by the /admin editor)
+
+  function renderBlog() {
+    const b = S.blog;
+    $('#blog').innerHTML = `
+      <div class="wrap">
+        ${heading('03', b.title)}
+        <p class="blog-intro reveal">${esc(b.intro)}</p>
+        <div class="post-list" id="post-list" aria-live="polite"></div>
+      </div>`;
+  }
+
+  function renderPosts() {
+    const items = S.blog.items;
+    $('#post-list').innerHTML = items.length
+      ? items
+          .map(
+            (it) => `
+            <a class="post glass-light reveal" href="#blog/${esc(it.id)}" data-cursor="READ" data-post="${esc(it.id)}">
+              <p class="post-meta"><time datetime="${esc(it.date)}">${esc(fmtDate(it.date))}</time><span>${readMins(it)} min read</span></p>
+              <h3>${esc(it.title)}</h3>
+              <p class="post-sum">${esc(it.summary)}</p>
+              <ul class="tags">${tags(it.tags)}</ul>
+              <span class="post-go">Read ${icon('i-arrow')}</span>
+            </a>`
+          )
+          .join('')
+      : '<p class="blog-intro">No posts yet.</p>';
+  }
+
+  function postHTML(it) {
+    return `
+      <p class="post-meta"><time datetime="${esc(it.date)}">${esc(fmtDate(it.date))}</time><span>${readMins(it)} min read</span></p>
+      <h2 id="reader-title">${esc(it.title)}</h2>
+      <ul class="tags">${tags(it.tags)}</ul>
+      <div class="prose">${MD.render(it.body)}</div>`;
+  }
+
   function renderTimeline() {
     const t = S.timeline;
     $('#timeline').innerHTML = `
       <div class="wrap">
-        ${heading('03', t.title)}
+        ${heading('04', t.title)}
         <ol class="timeline">
           ${t.items
             .map(
@@ -190,7 +233,7 @@
     const q = S.quotes;
     $('#quotes').innerHTML = `
       <div class="wrap">
-        ${heading('04', q.title)}
+        ${heading('05', q.title)}
         <div class="quotes">
           ${q.items.map((text, i) => `<blockquote class="glass-light quote reveal ${i % 2 ? 'r' : 'l'}"><p>${esc(text)}</p></blockquote>`).join('')}
         </div>
@@ -201,17 +244,17 @@
     const c = S.contact;
     $('#contact').innerHTML = `
       <div class="wrap">
-        ${heading('05', c.title)}
+        ${heading('06', c.title)}
         <div class="glass contact-card reveal">
-          <form id="contact-form" novalidate>
+          <form id="contact-form" method="post" action="mailto:${esc(S.links.email)}" enctype="text/plain" novalidate>
             <p class="intro">${esc(c.intro)}</p>
-            <label>Name<input class="input" name="name" type="text" autocomplete="name" required></label>
-            <label>Email<input class="input" name="email" type="email" autocomplete="email" required></label>
-            <label>Message<textarea class="input" name="message" rows="5" required></textarea></label>
+            <label>Name<input class="input" name="name" type="text" autocomplete="name" required aria-describedby="form-status"></label>
+            <label>Email<input class="input" name="email" type="email" autocomplete="email" inputmode="email" required aria-describedby="form-status"></label>
+            <label>Message<textarea class="input" name="message" rows="5" required aria-describedby="form-status"></textarea></label>
             <input class="hp" name="company" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
             <div class="form-row">
               <button class="btn" type="submit">Send message ${icon('i-arrow')}</button>
-              <p class="status" id="form-status" role="status" aria-live="polite"></p>
+              <p class="status" id="form-status" role="status" aria-live="polite" aria-atomic="true"></p>
             </div>
           </form>
           <div class="socials">
@@ -235,6 +278,7 @@
 
   renderAbout();
   renderProjects();
+  renderBlog();
   renderTimeline();
   renderQuotes();
   renderContact();
@@ -424,48 +468,73 @@
   });
 
   /* ---------- contact form: Formspree if configured, else mailto ---------- */
+  // The <form> is method="post" with a mailto: action, so even if this handler never ran nothing would be put in the URL.
+  // Here we always preventDefault and send it ourselves.
 
   const form = $('#contact-form');
   const status = $('#form-status');
+  const sendBtn = $('button[type="submit"]', form);
+  const say = (text, kind) => {
+    status.textContent = text;
+    status.className = 'status' + (kind ? ' ' + kind : '');
+  };
+  const fields = ['name', 'email', 'message'].map((n) => form.elements[n]);
+  fields.forEach((f) =>
+    f.addEventListener('input', () => {
+      f.removeAttribute('aria-invalid');
+    })
+  );
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form).entries());
-    if (data.company) return; // honeypot
-    if (!data.name || !data.message || !/^\S+@\S+\.\S+$/.test(data.email || '')) {
-      status.textContent = 'Fill in your name, a valid email and a message.';
-      status.className = 'status err';
+    if (data.company) return; // honeypot: bots fill it, people never see it
+
+    // validation: mark every bad field, say what is wrong, focus the first one
+    const bad = [];
+    if (!data.name || !data.name.trim()) bad.push([form.elements.name, 'your name']);
+    if (!/^\S+@\S+\.\S+$/.test((data.email || '').trim())) bad.push([form.elements.email, 'a valid email address']);
+    if (!data.message || !data.message.trim()) bad.push([form.elements.message, 'a message']);
+    fields.forEach((f) => (bad.some(([x]) => x === f) ? f.setAttribute('aria-invalid', 'true') : f.removeAttribute('aria-invalid')));
+    if (bad.length) {
+      say('Please add ' + bad.map(([, what]) => what).join(', ').replace(/, ([^,]*)$/, ' and $1') + '.', 'err');
+      bad[0][0].focus();
       return;
     }
+
+    sendBtn.disabled = true;
+    const mailto = () => {
+      const body = `${data.message}\n\n— ${data.name} (${data.email})`;
+      window.location.href =
+        'mailto:' + S.links.email + '?subject=' + encodeURIComponent(S.contact.subject) + '&body=' + encodeURIComponent(body);
+    };
     const id = S.contact.formspreeId;
-    if (id) {
-      status.textContent = 'Sending...';
-      status.className = 'status';
-      try {
+    try {
+      if (id) {
+        say('Sending...', '');
         const r = await fetch('https://formspree.io/f/' + encodeURIComponent(id), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify({ name: data.name, email: data.email, message: data.message }),
         });
-        if (!r.ok) throw new Error(r.status);
+        if (!r.ok) throw new Error(String(r.status));
         form.reset();
-        status.textContent = 'Sent. Thanks, I will reply soon.';
-        status.className = 'status ok';
-        return;
-      } catch (err) {
-        status.textContent = 'Could not send, opening your email app instead.';
-        status.className = 'status err';
+        say('Message sent. Thanks, I will reply soon.', 'ok');
+      } else {
+        mailto();
+        say('Your email app should open with the message ready. Press send there to finish. If nothing opens, email ' + S.links.email + '.', 'ok');
       }
-    }
-    const body = `${data.message}\n\n— ${data.name} (${data.email})`;
-    window.location.href =
-      'mailto:' + S.links.email + '?subject=' + encodeURIComponent(S.contact.subject) + '&body=' + encodeURIComponent(body);
-    if (!id) {
-      status.textContent = 'Opening your email app...';
-      status.className = 'status ok';
+    } catch (err) {
+      say('Could not send the message. Opening your email app instead; if nothing opens, email ' + S.links.email + '.', 'err');
+      mailto();
+    } finally {
+      sendBtn.disabled = false;
     }
   });
 
   /* ---------- scroll reveal ---------- */
+
+  let revealIO = null;
 
   if (!reduced && 'IntersectionObserver' in window) {
     document.documentElement.classList.add('js-reveal');
@@ -480,7 +549,61 @@
       { rootMargin: '0px 0px -8% 0px' }
     );
     $$('.reveal').forEach((el) => io.observe(el));
+    revealIO = io;
   }
+
+  /* ---------- blog reader ---------- */
+
+  const reader = $('#reader');
+  const readerBox = $('.reader-box', reader);
+  let readerFrom = null;
+  function openPost(id, push) {
+    const it = S.blog.items.find((x) => x.id === id);
+    if (!it) return;
+    readerFrom = document.activeElement;
+    $('#reader-body').innerHTML = postHTML(it);
+    document.title = it.title + ' | Uday Singh';
+    reader.hidden = false;
+    document.documentElement.classList.add('reader-open');
+    readerBox.scrollTop = 0;
+    readerBox.focus({ preventScroll: true });
+    if (push && location.hash !== '#blog/' + id) history.pushState(null, '', '#blog/' + id);
+  }
+  function closePost(push) {
+    if (reader.hidden) return;
+    reader.hidden = true;
+    document.documentElement.classList.remove('reader-open');
+    document.title = 'Uday Singh | Firmware & Hardware Developer';
+    if (push && /^#blog\//.test(location.hash)) history.pushState(null, '', '#blog');
+    if (readerFrom && readerFrom.focus) readerFrom.focus({ preventScroll: true });
+  }
+  $('#blog').addEventListener('click', (e) => {
+    const a = e.target.closest('a[data-post]');
+    if (!a) return;
+    e.preventDefault();
+    openPost(a.dataset.post, true);
+  });
+  $('#reader-close').addEventListener('click', () => closePost(true));
+  reader.addEventListener('mousedown', (e) => e.target === reader && closePost(true));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !reader.hidden) closePost(true);
+    // keep keyboard focus inside the open article
+    if (e.key === 'Tab' && !reader.hidden) {
+      const f = [...reader.querySelectorAll('a[href], button')].filter((x) => x.offsetParent !== null);
+      if (!f.length) return;
+      const first = f[0];
+      const last = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === readerBox)) (e.preventDefault(), last.focus());
+      else if (!e.shiftKey && document.activeElement === last) (e.preventDefault(), first.focus());
+    }
+  });
+  const route = () => {
+    const mt = /^#blog\/([\w-]+)$/.exec(location.hash);
+    if (mt) openPost(mt[1], false);
+    else closePost(false);
+  };
+  window.addEventListener('popstate', route);
+  window.addEventListener('hashchange', route);
 
   /* ---------- command palette ("/") ---------- */
 
@@ -500,6 +623,7 @@
   const commands = [
     { cmd: 'goto about', desc: 'who is this guy', run: go('about') },
     { cmd: 'goto projects', desc: 'the builds', run: go('projects') },
+    { cmd: 'goto blog', desc: 'notes from the bench', run: go('blog') },
     { cmd: 'goto timeline', desc: 'wro 2026 and now', run: go('timeline') },
     { cmd: 'goto quotes', desc: 'words to live by', run: go('quotes') },
     { cmd: 'goto contact', desc: 'say hi', run: go('contact') },
@@ -526,6 +650,29 @@
       run: () => navigator.clipboard && navigator.clipboard.writeText(S.links.email),
     },
   ];
+
+  /* ---------- load the posts (data/posts.json) ---------- */
+
+  const validPost = (p) =>
+    p && /^[a-z0-9-]{1,60}$/.test(p.id) && /^\d{4}-\d{2}-\d{2}$/.test(p.date) && typeof p.title === 'string' && typeof p.body === 'string';
+
+  fetch('data/posts.json', { cache: 'no-cache' })
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error('posts ' + r.status))))
+    .then((d) => {
+      S.blog.items = (d.items || [])
+        .filter(validPost)
+        .map((p) => ({ ...p, tags: Array.isArray(p.tags) ? p.tags : [], summary: p.summary || '' }))
+        .sort((a, b) => (a.date < b.date ? 1 : -1));
+      renderPosts();
+      $$('.reveal', $('#post-list')).forEach((el) => (revealIO ? revealIO.observe(el) : el.classList.add('in')));
+      const at = commands.findIndex((c) => c.cmd === 'goto blog') + 1;
+      commands.splice(at, 0, ...S.blog.items.map((p) => ({ cmd: 'read ' + p.id, desc: p.title.toLowerCase().slice(0, 40), run: () => openPost(p.id, true) })));
+      route(); // deep link: /#blog/<id> opens the article once the posts are here
+    })
+    .catch(() => {
+      S.blog.items = [];
+      renderPosts();
+    });
 
   function draw() {
     const q = input.value.trim().toLowerCase();
@@ -592,10 +739,11 @@
   });
 
   /* ---------- 3D laptop ---------- */
-  // Three.js is ~600 KB and booting WebGL blocks the main thread for a moment, so it is loaded
-  // after the page is already usable: on the first interaction, or LAPTOP_BOOT_MS after load.
+  // Three.js (~600 KB, ~125 KB gzipped), the laptop code and the ESP32 model are loaded INSIDE the boot loader:
+  // they start right after the first paint (so they never delay it), the loader's counter waits for them, and the
+  // laptop is fully built when the loader lifts. On repeat visits (no loader) they load lazily after the window
+  // "load" event instead, or on the first interaction.
   const THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'; // pinned
-  const LAPTOP_BOOT_MS = 6000;
   const stage = $('#stage');
   const showStage = () => stage.classList.remove('is-booting');
 
@@ -609,12 +757,9 @@
       document.head.appendChild(s);
     });
 
-  // While the boot loader is on screen we load and build the whole 3D scene behind it, so the laptop is
-  // fully ready (models, shaders, first frame) when the loader lifts. window.__laptopReady resolves then.
-  // EAGER_3D = true: the boot loader waits for the 3D scene, so the laptop is fully ready when it lifts (best look).
-  // false: 3D loads on first interaction / after 6 s instead (lighter on slow devices and for Lighthouse).
-  const EAGER_3D = true;
-  const loading = EAGER_3D && document.documentElement.classList.contains('is-loading');
+  // The boot loader waits for the 3D scene, but never longer than its cap (LOADER_MAX in fx.js, 4 s).
+  // If the scene is later than that, the loader lifts without it and the laptop fades in when it is ready.
+  const loading = document.documentElement.classList.contains('is-loading');
   let resolveReady = () => {};
   window.__laptopReady = loading ? new Promise((res) => (resolveReady = res)) : null;
   window.__laptopHero = null;
@@ -628,7 +773,7 @@
           stage,
           track: $('#hero'),
           zone: [$('#hero'), $('#about')],
-          holdIntro: loading, // the lid opens after the loader lifts (fx.js calls play)
+          holdIntro: loading && !window.__introStarted, // lid opens once the loader has lifted
           onFallback: () => {
             showStage();
             resolveReady();
@@ -638,6 +783,7 @@
         if (!hero) return resolveReady();
         window.__laptopHero = hero;
         window.__laptopPlay = () => hero.play();
+        if (window.__introStarted) hero.play(); // loader already gone (cap reached): open the lid right away
         hero.ready.then(() => {
           requestAnimationFrame(showStage);
           resolveReady();
@@ -653,19 +799,21 @@
   }
 
   let booted = false;
+  const INTERACT = ['pointermove', 'pointerdown', 'touchstart', 'wheel', 'keydown', 'scroll'];
   const boot = () => {
     if (booted) return;
     booted = true;
-    ['pointermove', 'pointerdown', 'touchstart', 'wheel', 'keydown', 'scroll'].forEach((e) =>
-      window.removeEventListener(e, boot)
-    );
+    INTERACT.forEach((e) => window.removeEventListener(e, boot));
     startLaptop();
   };
-  ['pointermove', 'pointerdown', 'touchstart', 'wheel', 'keydown', 'scroll'].forEach((e) =>
-    window.addEventListener(e, boot, { passive: true })
-  );
-  window.addEventListener('load', () => setTimeout(boot, LAPTOP_BOOT_MS));
-  if (loading) boot(); // start now: the loader is hiding the work
+  INTERACT.forEach((e) => window.addEventListener(e, boot, { passive: true }));
+  const afterPaint = () =>
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => ('requestIdleCallback' in window ? requestIdleCallback(boot, { timeout: 1200 }) : setTimeout(boot, 150)))
+    );
+  if (loading) requestAnimationFrame(() => requestAnimationFrame(boot)); // first visit: load the 3D scene inside the loader
+  else if (document.readyState === 'complete') afterPaint();
+  else window.addEventListener('load', afterPaint, { once: true });
 
   /* ---------- easter egg: fastfetch -> I USE ARCH BTW ---------- */
   // palette command, clicking the laptop screen (laptop.js), or typing  arch  /  btw  /  fastfetch  anywhere

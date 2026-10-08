@@ -179,3 +179,25 @@
 
 /* performance: kill the original knowura/site blur on the surfaces that sit over moving content */
 .liquid .glass, .liquid .nav, .liquid .tag, .liquid .btn, .liquid .marquee { -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* WCAG AA: small text on the glass highlights needs a darker body behind it (measured 3.6-4.4:1 before, >= 4.5:1 after) */
+.liquid .tag-chip,
+.liquid .glass-light,
+.liquid .eyebrow,
+.liquid .badge,
+.liquid .tl-card {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 55%, rgba(255, 255, 255, 0.07) 100%),
+    color-mix(in srgb, var(--dark) 80%, transparent);
+}
+
+/* WCAG AA: nav links and form labels were 2.6-4.4:1 (dim text on a see-through pill / glass). Brighter text + a denser pill. */
+.liquid .nav { background: var(--lg-fill), color-mix(in srgb, var(--dark) 80%, transparent); }
+.liquid .nav-links a { color: var(--text); }
+.liquid .nav-links a:hover, .liquid .nav-links a:focus-visible { color: var(--cyan); }
+.liquid .contact-card label { color: color-mix(in srgb, var(--text-dim) 40%, var(--text)); }
+@media (max-width: 640px) { .liquid .nav { padding: 6px 14px; } .liquid .nav-links { gap: 12px; } .liquid .nav-links a { font-size: 12.5px; letter-spacing: 0.04em; } }
+
+/* blog reader: an opaque-ish sheet so the page behind never shows through the text */
+.liquid .reader-box { background: var(--lg-fill), color-mix(in srgb, var(--dark) 94%, var(--blue-deep)); }
+@media (max-width: 640px) { .liquid .nav-links { gap: 10px; } .liquid .nav-links a { font-size: 12px; letter-spacing: 0.03em; } }
