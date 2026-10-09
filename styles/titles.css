@@ -1,0 +1,27 @@
+/* Third typeface: DotGothic16 (open source, SIL OFL 1.1, by The DotGothic16 Project Authors,
+   https://github.com/fontworks-fonts/DotGothic16): the TITLE voice. License text: assets/fonts/DotGothic16-OFL.txt.
+   Roles: DotGothic16 = titles (section titles, project / timeline / post titles, article title).
+          Redaction 35 = tagline, quotes and article sub-headings (see redaction.css).
+          Geist Pixel = everything else (UI, labels, body).
+   Characters DotGothic16's Latin subset lacks fall back to Redaction 35, then Georgia.
+   Loaded after redaction.css so these rules win; class selectors + !important beat knowura.css' `* { font-family: ... !important }`. */
+
+@font-face { font-family: 'DotGothic16'; font-style: normal; font-weight: 400; font-display: swap; src: url(../assets/fonts/dotgothic16-latin.woff2) format('woff2'); }
+
+.section-title .st-text,
+.project h3,
+.tl-card h3,
+.post h3,
+.reader h2,
+.ad-title {
+  font-family: 'DotGothic16', 'Redaction 35', Georgia, serif !important;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.section-title .st-text { font-size: clamp(40px, 6.4vw, 78px); line-height: 1; }
+.project h3 { font-size: clamp(34px, 4vw, 54px); line-height: 1.02; }
+.tl-card h3 { font-size: clamp(22px, 2.2vw, 28px); line-height: 1.15; }
+.post h3 { font-size: clamp(24px, 2.4vw, 30px); line-height: 1.1; }
+.reader h2 { font-size: clamp(32px, 5.2vw, 52px); line-height: 1.04; }
+.ad-title { font-size: clamp(30px, 5vw, 46px); }

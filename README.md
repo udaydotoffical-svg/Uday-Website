@@ -79,13 +79,14 @@ The "GitHub Repo Stats on Hover" card (`id: 'repo-stats'`) uses `visual.type: 'h
 | 3D laptop model | `glbUrl` line in `js/main.js` (commented) | See below. |
 | Formspree (optional) | `contact.formspreeId` in `js/content.js` | Empty = the form opens the visitor's email app (mailto). |
 
-## Fonts: exactly two
+## Fonts: exactly three
 
-Contrast comes from two typefaces only:
-- **Redaction 35** (open source, SIL OFL, <https://www.redaction.us>): headings and titles only. That is the hero tagline (italic), the section titles, the project card titles (KNOWURA, SAMATA, ...) and the timeline card titles. No other Redaction level is used or shipped.
-- **Geist Pixel** (from `knowura.css`): everything else (body text, quotes, labels, buttons, nav, the UDAY / SINGH blocks, the terminal).
+Contrast comes from three typefaces, each with one job:
+- **DotGothic16** (open source, SIL OFL 1.1, <https://github.com/fontworks-fonts/DotGothic16>): the **title** voice. Section titles, project titles (KNOWURA, SAMATA, ...), timeline card titles, blog card titles, the article title and the `/admin` heading. Only the Latin subset is shipped (10 KB); any character it lacks falls back to Redaction 35. Files: `assets/fonts/dotgothic16-latin.woff2` (+ `DotGothic16-OFL.txt`), rules in `styles/titles.css`.
+- **Redaction 35** (open source, SIL OFL, <https://www.redaction.us>): the editorial voice. The hero tagline (italic), the quotes and the article sub-headings. No other Redaction level is used. Files: `assets/fonts/redaction-35-{normal,italic}.woff2`, rules in `styles/redaction.css`.
+- **Geist Pixel** (from `knowura.css`): everything else (body text, labels, buttons, nav, the UDAY / SINGH blocks, the terminal).
 
-Files: `assets/fonts/redaction-35-{normal,italic}.woff2` (about 90 KB, self-hosted, the italic is preloaded). `styles/redaction.css` has the `@font-face` and the list of what uses it. To make another element a heading in Redaction add it to that list, or give it class `serif` (child elements need the class too, because Knowura's `* { font-family: ... !important }` hits every element; the `!important` in `.serif` is what beats it).
+`styles/titles.css` loads after `styles/redaction.css`, so its rules win. To make another element a title in DotGothic16 add it to the list in that file. Child elements need the font set too, because Knowura's `* { font-family: ... !important }` hits every element (a class selector with `!important` is what beats it).
 
 ## Liquid glass (performance-first)
 

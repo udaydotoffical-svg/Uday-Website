@@ -1,5 +1,5 @@
-/* Second typeface: Redaction (open source, SIL OFL, by Titus Kaphar / Reilly / Collins). Used for the "voice" of the
-   site (headings and titles only) while Geist Pixel stays the UI/system voice.
+/* Redaction (open source, SIL OFL, by Titus Kaphar / Reilly / Collins). Now the "editorial" voice: hero tagline,
+   quotes and article sub-headings. Titles moved to DotGothic16 (styles/titles.css, which loads after this file and wins). Geist Pixel stays the UI/system voice.
    Only ONE Redaction level is used: 35 (stair-stepped edges, letters intact). The site has exactly two typefaces:
    Geist Pixel (UI / labels / system voice) and Redaction 35 (display voice), for contrast. knowura.css is untouched; the !important
    below out-ranks its `* { font-family: ... !important }` because a class beats the universal selector. */
@@ -46,7 +46,14 @@
   line-height: 1.1;
 }
 
-/* Everything else (body text, quotes, labels, buttons, nav, terminal) stays Geist Pixel. */
+/* quotes: Redaction italic, the words still light up on scroll */
+.quote p, .quote p .w {
+  font-family: 'Redaction 35', Georgia, serif !important;
+  font-style: italic;
+}
+.quote p { font-size: clamp(24px, 2.4vw, 30px); line-height: 1.3; }
+
+/* Everything else (body text, labels, buttons, nav, terminal) stays Geist Pixel. */
 
 /* blog: post card titles, article title and sub-headings are headings, so they use Redaction 35 */
 .post h3, .reader h2, .prose h3 {
