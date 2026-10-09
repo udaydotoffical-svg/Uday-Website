@@ -1136,7 +1136,8 @@
     // p: 0 = hero, 1 = drifted aside (About)
     function targetFor(p) {
       const v = visSize();
-      const desktop = aspect >= 1;
+      // same breakpoint as the CSS name tags (max-width: 860px = centred 'phone' layout), so the laptop and UDAY / SINGH always line up
+      const desktop = aspect >= 1 && global.innerWidth > 860;
       let s0;
       let a;
       let b;
@@ -1146,7 +1147,8 @@
         b = { x: v.w * 0.3, y: v.h * 0.12, s: s0 * 0.58 };
       } else {
         s0 = Math.min(v.h * 0.3 / 2.5, (v.w * 0.8) / (W + 0.6));
-        a = { x: 0, y: v.h * 0.2, s: s0 };
+        const short = global.innerHeight <= 560; // landscape phones / tiny windows: sit a bit lower so UDAY clears the nav
+        a = { x: 0, y: v.h * (short ? 0.13 : 0.2), s: s0 };
         b = { x: v.w * 0.24, y: v.h * 0.36, s: s0 * 0.5 };
       }
       const e = easeOutCubic(p);
