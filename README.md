@@ -37,9 +37,9 @@ Open the printed URL. (`/api/embed-check` only exists on Vercel; locally the Kno
 3. Framework preset: **Other**. Leave build command and output directory empty. Deploy.
 4. Open your new URL, then set it in two places so link previews work:
    - `siteUrl` in `js/content.js`
-   - the three `https://udaysingh.vercel.app/...` lines (`og:url`, `og:image`) in `index.html`
+   - the `canonical`, `og:url`, `og:image` and `twitter:image` lines in `index.html` (currently `https://uday.is-cool.dev`)
 
-Optional: add a custom domain under Project, Settings, Domains.
+Custom domain: this site runs on `https://uday.is-cool.dev` (a free Open Domains subdomain, CNAME to `cname.vercel-dns.com`, added under Project, Settings, Domains). `udaysingh.vercel.app` still works as a fallback. If you change domains, update the canonical / Open Graph URLs and the Knowura frame-ancestors list below.
 
 ## Edit the content
 
@@ -73,7 +73,7 @@ The "GitHub Repo Stats on Hover" card (`id: 'repo-stats'`) uses `visual.type: 'h
 | Samata photo or video (optional) | `projects.items[1].visual` in `js/content.js` | The panel is an animated demo signal monitor, no assets needed. For a real photo or video, change it to `type: 'media'` with `image` (and optional `video`). |
 | Repo Stats extension GitHub repo (optional) | `projects.items[2].github` in `js/content.js` | Commented out: add the repo URL and a GitHub button appears (with the hover popup). The Gumroad link is already set. |
 | Samata link (optional) | `projects.items[1].link` | Left out on purpose (the repo is private); a badge line shows instead. Add `link: { label, href }` to get a button. |
-| Site URL | `siteUrl` in `js/content.js`, plus the OG tags in `index.html` | Set to `https://udaysingh.vercel.app`. |
+| Site URL | `siteUrl` in `js/content.js`, plus the OG tags in `index.html` | Set to `https://uday.is-cool.dev`. |
 | OG image | `assets/og.png` | 1200x630, regenerate if you change your name block. |
 | Timeline | `timeline.items` in `js/content.js` | Wording is a draft built from what you told me; edit freely. |
 | 3D laptop model | `glbUrl` line in `js/main.js` (commented) | See below. |
@@ -193,7 +193,7 @@ If you see `X-Frame-Options: DENY` (or `SAMEORIGIN`), or a `frame-ancestors` tha
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' https://udaysingh.vercel.app" }
+        { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' https://uday.is-cool.dev https://udaysingh.vercel.app" }
       ]
     }
   ]

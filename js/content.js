@@ -21,7 +21,7 @@ window.SITE = {
   eyebrow: 'Student dev · Vadodara, India',
   description:
     'Uday Singh is a student developer and hardware builder from Vadodara, India, focused on firmware and hardware. WRO 2026 Future Innovators, team CultureWear.',
-  siteUrl: 'https://udaysingh.vercel.app', // used for Open Graph
+  siteUrl: 'https://uday.is-cool.dev', // used for Open Graph
 
   links: {
     github: 'https://github.com/udaydotoffical-svg',
